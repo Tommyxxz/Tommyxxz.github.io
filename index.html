@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🎱 双人台球 · 八球对战</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100vh;
+    background: radial-gradient(circle at 50% 12%, #2b3140, #0a0c10 72%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    overflow-x: hidden;
+    color: rgba(255,255,255,0.9);
+  }
+  #wrap { width: min(97vw, 1080px); position: relative; padding: 0 0 22px 0; }
+
+  /* ========== 工具栏 ========== */
+  #toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  #toolbar > button {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.85);
+    padding: 9px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #toolbar > button:hover {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.30);
+  }
+  #difficulty {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.28);
+    padding: 5px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  #difficulty .label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    padding: 0 10px 0 6px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  #difficulty button {
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+  }
+  #difficulty button:hover {
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.08);
+  }
+  #difficulty button.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 3px 14px rgba(59,130,246,0.45);
+  }
+
+  canvas {
+    display: block; width: 100%; height: auto;
+    border-radius: 22px;
+    box-shadow: 0 26px 70px rgba(0,0,0,.72), 0 0 0 1px rgba(255,255,255,.07);
+    touch-action: none;
+    cursor: crosshair;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ========== 规则面板 ========== */
+  #rulesPanel {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 16px;
+  }
+  #rulesPanel.hidden { display: none; }
+
+  #rulesContent {
+    background: linear-gradient(160deg, #1c2636, #0e1520);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 22px;
+    padding: 26px 30px 22px;
+    max-width: min(92vw, 600px);
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.7);
+    animation: pop 0.22s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+  #rulesContent h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  #rulesContent .subtitle {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.42);
+  }
+  .rule-block {
+    margin-bottom: 16px;
+    padding-left: 14px;
+    border-left: 3px solid rgba(59,130,246,0.5);
+  }
+  .rule-block h3 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    color: #60a5fa;
+    font-weight: 700;
+  }
+  .rule-block p, .rule-block ul {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.78;
+    color: rgba(255,255,255,0.80);
+  }
+  .rule-block ul { padding-left: 18px; }
+  .rule-block li { margin-bottom: 2px; }
+  .rule-block strong { color: #fff; }
+
+  .tag {
+    display: inline-block;
+    padding: 1px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 5px;
+  }
+  .tag-solid  { background: rgba(242,194,28,0.20); color: #f2c21c; }
+  .tag-stripe { background: rgba(26,95,208,0.28); color: #7db4ff; }
+  .tag-eight  { background: rgba(255,255,255,0.10); color: #ddd; }
+
+  .foul-tip {
+    margin-top: 7px !important;
+    font-size: 13px !important;
+    color: #ff9b6a !important;
+  }
+
+  #closeRules {
+    display: block;
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #closeRules:hover  { opacity: 0.88; }
+  #closeRules:active { transform: scale(0.98); }
+
+  @media (max-width: 620px) {
+    #toolbar > button { padding: 8px 14px; font-size: 13px; }
+    #difficulty button { padding: 7px 11px; font-size: 12px; }
+    #difficulty .label { padding: 0 6px 0 4px; font-size: 12px; }
+    #rulesContent { padding: 20px 18px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="toolbar">
+    <button id="rulesBtn">📖 游戏规则</button>
+    <div id="difficulty">
+      <span class="label">难度</span>
+      <button data-diff="easy">简单</button>
+      <button data-diff="normal" class="active">普通</button>
+      <button data-diff="hard">困难</button>
+    </div>
+  </div>
+  <canvas id="game"></canvas>
+</div>
+
+<!-- ============ 规则面板 ============ -->
+<div id="rulesPanel" class="hidden">
+  <div id="rulesContent">
+    <h2>🎱 双人台球 · 八球规则</h2>
+    <p class="subtitle">简单易懂，30 秒学会</p>
+
+    <div class="rule-block">
+      <h3>🎯 游戏目标</h3>
+      <p>把自己球组的球<strong>全部</strong>打进袋，<strong>最后</strong>再打进 8 号黑球，就赢了！</p>
+    </div>
+
+    <div class="rule-block">
+      <h3>⚪ 球组划分</h3>
+      <ul>
+        <li><span class="tag tag-solid">全色球 1-7</span>纯色球（一个球组）</li>
+        <li><span class="tag tag-stripe">花色球 9-15</span>带条纹的球（另一个球组）</li>
+        <li><span class="tag tag-eight">8 号球</span>黑色，最后打</li>
+      </ul>
+    </div>
+
+    <div class="rule-block">
+      <h3>🔄 击球顺序</h3>
+      <ul>
+        <li>开球后球台是「开放」状态，谁先合法进球，就获得那一组球</li>
+        <li>每回合<strong>必须先打自己球组</strong>的球（不分号码）</li>
+        <li>自己球组全部清完后 → 本回合<strong>目标变为 8 号黑球</strong></li>
+        <li>打进自己球组的球 → <strong>继续击球</strong>；没打进 → 换对手</li>
+      </ul>
+    </div>
+
+    <div class="rule-block">
+      <h3>⚠️ 犯规（对手获得自由球）</h3>
+      <ul>
+        <li>母球（白球）落袋</li>
+        <li>空杆，没碰到任何球</li>
+        <li>先碰到了对方的球</li>
+        <li>该打 8 号球时没先碰 8 号球</li>
+      </ul>
+      <p class="foul-tip">自由球：可以点击台面任意位置重新放置白球</p>
+    </div>
+
+    <div class="rule-block">
+      <h3>❌ 直接输掉比赛</h3>
+      <ul>
+        <li>还没清完自己球组，就提前打进 8 号球</li>
+        <li>犯规的同时打进 8 号球</li>
+      </ul>
+      <p class="foul-tip">开球时打进 8 号球不算输，会重新摆回球台</p>
+    </div>
+
+    <div class="rule-block">
+      <h3>🖱️ 操作方式</h3>
+      <p>按住鼠标 / 手指蓄力（力度条会变长），松开击球。</p>
+    </div>
+
+    <button id="closeRules">知道了，开始游戏</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  //  画布与基础常量
+  // ============================================================
+  const W = 960, H = 560;
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.scale(DPR, DPR);
+
+  const L = 50, T = 64, R = 910, B = 486;
+  const PW = R - L, PH = B - T;
+  const BALL_R = 10;
+
+  // ---- 难度相关 ----
+  let POCKET_R  = 21;
+  let DECEL     = 400;
+  let WALL_DAMP = 0.80;
+  let BALL_REST = 0.95;
+  let MAX_SHOT  = 2000;
+  let MIN_SHOT  = 220;
+
+  const FIXED_DT = 1 / 300;
+
+  const POCKETS = [
+    { x: L,          y: T },
+    { x: L + PW / 2, y: T },
+    { x: R,          y: T },
+    { x: L,          y: B },
+    { x: L + PW / 2, y: B },
+    { x: R,          y: B }
+  ];
+
+  const COLORS = {
+    1:'#f2c21c', 2:'#1a5fd0', 3:'#d92b2b', 4:'#7b2fbe',
+    5:'#f07818', 6:'#17a34a', 7:'#8e2f2f', 8:'#161616',
+    9:'#f2c21c', 10:'#1a5fd0', 11:'#d92b2b', 12:'#7b2fbe',
+    13:'#f07818', 14:'#17a34a', 15:'#8e2f2f'
+  };
+
+  // ============================================================
+  //  游戏状态
+  // ============================================================
+  const cueBall = {
+    x: 0, y: 0, vx: 0, vy: 0, r: BALL_R,
+    color: '#ffffff', num: 0, active: true, cue: true, stripe: false
+  };
+  const balls = [cueBall];
+  const effects = [];
+
+  const players = [
+    { name: '玩家 1', group: null, color: '#4a9eff' },
+    { name: '玩家 2', group: null, color: '#ff7a4a' }
+  ];
+
+  let turn        = 0;
+  let openTable   = true;
+  let placeMode   = 'none';   // 'none' | 'break' | 'anywhere'
+  let isBreak     = true;
+  let gameOver    = false;
+  let winner      = -1;
+
+  let state       = 'aiming';
+  let aimAngle    = 0;
+  let power       = 0;
+  let pointerDown = false;
+
+  let flashMsg = '', flashTimer = 0;
+  const placePreview = { x: 0, y: 0, valid: false };
+
+  let shot = { firstHit: null, potted: [], cuePotted: false };
+
+  // 上一杆结果（结算画面用）
+  let lastShotInfo = '';
+
+  // ============================================================
+  //  工具函数
+  // ============================================================
+  function roundRect(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function groupOf(num) {
+    if (num >= 1 && num <= 7)  return 'solid';
+    if (num >= 9 && num <= 15) return 'stripe';
+    return 'eight';
+  }
+
+  function countRemaining(group) {
+    let n = 0;
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (b.active && !b.cue && groupOf(b.num) === group) n++;
+    }
+    return n;
+  }
+
+  function flash(msg) { flashMsg = msg; flashTimer = 2.4; }
+
+  function groupName(g) {
+    if (g === 'solid')  return '全色球 1-7';
+    if (g === 'stripe') return '花色球 9-15';
+    if (g === 'eight')  return '8 号黑球';
+    return '任意球';
+  }
+
+  function isFreeSpot(x, y, self) {
+    if (x - BALL_R < L + 1 || x + BALL_R > R - 1) return false;
+    if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+    for (let i = 0; i < POCKETS.length; i++) {
+      const p = POCKETS[i];
+      if (Math.hypot(x - p.x, y - p.y) < POCKET_R + BALL_R) return false;
+    }
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (b === self || !b.active) continue;
+      if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
+    }
+    return true;
+  }
+
+  function canPlaceCue(x, y, mode) {
+    if (mode === 'break') {
+      const maxX = L + PW * 0.25;
+      if (x - BALL_R < L + 1 || x + BALL_R > maxX) return false;
+      if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+    } else {
+      if (x - BALL_R < L + 1 || x + BALL_R > R - 1) return false;
+      if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+    }
+    for (let i = 0; i < POCKETS.length; i++) {
+      const p = POCKETS[i];
+      if (Math.hypot(x - p.x, y - p.y) < POCKET_R + BALL_R) return false;
+    }
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (b.cue || !b.active) continue;
+      if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
+    }
+    return true;
+  }
+
+  // ============================================================
+  //  摆球
+  // ============================================================
+  function initRack() {
+    balls.length = 0;
+    balls.push(cueBall);
+
+    cueBall.active = true;
+    cueBall.vx = cueBall.vy = 0;
+    cueBall.x = L + PW * 0.25;
+    cueBall.y = T + PH / 2;
+
+    const nums = [1,2,3,4,5,6,7,9,10,11,12,13,14,15];
+    for (let i = nums.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = nums[i]; nums[i] = nums[j]; nums[j] = t;
+    }
+    nums.splice(4, 0, 8);
+
+    const apexX = L + PW * 0.72;
+    const cy = T + PH / 2;
+    const d = 2 * BALL_R + 0.9;
+    const dxRow = d * Math.sqrt(3) / 2;
+
+    let idx = 0;
+    for (let row = 0; row < 5; row++) {
+      for (let k = 0; k <= row; k++) {
+        const num = nums[idx++];
+        balls.push({
+          x: apexX + row * dxRow,
+          y: cy + (k - row / 2) * d,
+          vx: 0, vy: 0, r: BALL_R,
+          color: COLORS[num],
+          num: num,
+          stripe: num > 8,
+          active: true,
+          cue: false
+        });
+      }
+    }
+  }
+
+  function respotEight() {
+    const eight = balls.find(function (b) { return b.num === 8; });
+    if (!eight) return;
+
+    eight.active = true;
+    eight.vx = eight.vy = 0;
+
+    const baseX = L + PW * 0.72;
+    const baseY = T + PH / 2;
+
+    if (isFreeSpot(baseX, baseY, eight)) { eight.x = baseX; eight.y = baseY; return; }
+    for (let step = 16; step < 700; step += 16) {
+      if (isFreeSpot(baseX + step, baseY, eight)) { eight.x = baseX + step; eight.y = baseY; return; }
+      if (isFreeSpot(baseX - step, baseY, eight)) { eight.x = baseX - step; eight.y = baseY; return; }
+    }
+    for (let ring = 1; ring < 14; ring++) {
+      for (let a = 0; a < 12; a++) {
+        const ang = a / 12 * Math.PI * 2;
+        const px = baseX + Math.cos(ang) * ring * 22;
+        const py = baseY + Math.sin(ang) * ring * 22;
+        if (isFreeSpot(px, py, eight)) { eight.x = px; eight.y = py; return; }
+      }
+    }
+    eight.x = baseX; eight.y = baseY;
+  }
+
+  // ============================================================
+  //  物理
+  // ============================================================
+  function physics(dt) {
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (!b.active) continue;
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+
+      const sp = Math.hypot(b.vx, b.vy);
+      if (sp > 0) {
+        const ns = sp - DECEL * dt;
+        if (ns <= 0.5) { b.vx = 0; b.vy = 0; }
+        else { const k = ns / sp; b.vx *= k; b.vy *= k; }
+      }
+    }
+
+    for (let i = 0; i < balls.length; i++) {
+      const a = balls[i];
+      if (!a.active) continue;
+      for (let j = i + 1; j < balls.length; j++) {
+        const b = balls[j];
+        if (!b.active) continue;
+
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const minD = a.r + b.r;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= minD * minD || d2 === 0) continue;
+
+        const dist = Math.sqrt(d2);
+        const nx = dx / dist, ny = dy / dist;
+        const overlap = minD - dist;
+
+        a.x -= nx * overlap * 0.5;
+        a.y -= ny * overlap * 0.5;
+        b.x += nx * overlap * 0.5;
+        b.y += ny * overlap * 0.5;
+
+        const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+        const vn = rvx * nx + rvy * ny;
+        if (vn > 0) continue;
+
+        const imp = -(1 + BALL_REST) * vn / 2;
+        a.vx -= imp * nx; a.vy -= imp * ny;
+        b.vx += imp * nx; b.vy += imp * ny;
+
+        if (shot.firstHit === null) {
+          if (a.cue && !b.cue) shot.firstHit = b.num;
+          else if (b.cue && !a.cue) shot.firstHit = a.num;
+        }
+      }
+    }
+
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (!b.active) continue;
+      for (let p = 0; p < POCKETS.length; p++) {
+        const pk = POCKETS[p];
+        const dx = b.x - pk.x, dy = b.y - pk.y;
+        if (dx * dx + dy * dy < POCKET_R * POCKET_R) {
+          handlePocket(b);
+          break;
+        }
+      }
+    }
+
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (!b.active) continue;
+      if (b.x - b.r < L) { b.x = L + b.r; b.vx =  Math.abs(b.vx) * WALL_DAMP; }
+      if (b.x + b.r > R) { b.x = R - b.r; b.vx = -Math.abs(b.vx) * WALL_DAMP; }
+      if (b.y - b.r < T) { b.y = T + b.r; b.vy =  Math.abs(b.vy) * WALL_DAMP; }
+      if (b.y + b.r > B) { b.y = B - b.r; b.vy = -Math.abs(b.vy) * WALL_DAMP; }
+    }
+  }
+
+  function handlePocket(b) {
+    b.active = false;
+    b.vx = b.vy = 0;
+    effects.push({ x: b.x, y: b.y, t: 0, color: b.cue ? '#ffffff' : b.color });
+    if (b.cue) shot.cuePotted = true;
+    else shot.potted.push(b.num);
+  }
+
+  // ============================================================
+  //  回合结算
+  // ============================================================
+  function endShot() {
+    const myIdx   = turn;
+    const myGroup = players[myIdx].group;
+
+    let foul = false, reason = '';
+    const pottedNums = shot.potted.slice();
+    let eightPotted = pottedNums.indexOf(8) >= 0;
+
+    // ---- 开球打进 8 号：重新摆放，不算输 ----
+    if (eightPotted && isBreak) {
+      pottedNums.splice(pottedNums.indexOf(8), 1);
+      eightPotted = false;
+      respotEight();
+      flash('开球打进 8 号球 · 已重新摆放');
+    }
+
+    // ---- 犯规判定 ----
+    if (shot.cuePotted) {
+      foul = true; reason = '母球落袋';
+    } else if (shot.firstHit === null) {
+      foul = true; reason = '空杆';
+    } else if (!openTable && myGroup) {
+      const remain = countRemaining(myGroup);
+      if (remain === 0) {
+        if (shot.firstHit !== 8) { foul = true; reason = '未先碰 8 号球'; }
+      } else {
+        if (groupOf(shot.firstHit) !== myGroup) {
+          if (shot.firstHit === 8) { foul = true; reason = '未清台先碰 8 号球'; }
+          else { foul = true; reason = '先碰对方球'; }
+        }
+      }
+    }
+
+    // ---- 8 号球定胜负 ----
+    if (eightPotted) {
+      const cleared = myGroup && countRemaining(myGroup) === 0;
+
+      if (cleared && !foul) {
+        gameOver = true;
+        winner = myIdx;
+        lastShotInfo = players[myIdx].name + ' 清台后打进 8 号球 · 获胜';
+      } else {
+        gameOver = true;
+        winner = 1 - myIdx;
+        if (!cleared) {
+          lastShotInfo = players[myIdx].name + ' 提前打进 8 号球 · 判负';
+        } else {
+          lastShotInfo = players[myIdx].name + ' 犯规打进 8 号球 · 判负';
+        }
+      }
+      isBreak = false;
+      return;
+    }
+
+    // ---- 球台开放时定球组 ----
+    if (openTable && !foul && pottedNums.length > 0) {
+      const first = pottedNums.find(function (n) { return n !== 8; });
+      if (first !== undefined) {
+        const g = groupOf(first);
+        players[myIdx].group = g;
+        players[1 - myIdx].group = (g === 'solid') ? 'stripe' : 'solid';
+        openTable = false;
+        flash(players[myIdx].name + ' → ' + groupName(g));
+      }
+    }
+
+    // ---- 是否继续击球 ----
+    let continueTurn = false;
+    if (!foul) {
+      const grp = players[myIdx].group;
+      if (grp) continueTurn = pottedNums.some(function (n) { return groupOf(n) === grp; });
+      else continueTurn = pottedNums.length > 0;
+    }
+
+    // ---- 应用结果 ----
+    if (foul) {
+      turn = 1 - myIdx;
+      cueBall.active = false;
+      placeMode = 'anywhere';
+      placePreview.x = cueBall.x;
+      placePreview.y = cueBall.y;
+      flash('犯规 · ' + reason);
+    } else if (continueTurn) {
+      const grp = players[myIdx].group;
+      if (grp && countRemaining(grp) === 0) {
+        flash('已清台 · 目标 8 号球');
+      }
+      if (!cueBall.active) placeMode = 'anywhere';
+    } else {
+      turn = 1 - myIdx;
+      if (!cueBall.active) placeMode = 'anywhere';
+    }
+
+    shot.firstHit = null;
+    shot.potted = [];
+    shot.cuePotted = false;
+    isBreak = false;
+  }
+
+  // ============================================================
+  //  绘制
+  // ============================================================
+  function drawTable() {
+    const frameGrad = ctx.createLinearGradient(0, 0, 0, H);
+    frameGrad.addColorStop(0, '#7a4f27');
+    frameGrad.addColorStop(0.45, '#54331a');
+    frameGrad.addColorStop(1, '#33200f');
+    roundRect(0, 0, W, H, 24);
+    ctx.fillStyle = frameGrad;
+    ctx.fill();
+
+    ctx.save();
+    roundRect(0, 0, W, H, 24);
+    ctx.clip();
+    const sheen = ctx.createLinearGradient(0, 0, W, H);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.10)');
+    sheen.addColorStop(0.35, 'rgba(255,255,255,0)');
+    sheen.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.fillStyle = sheen;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    const feltGrad = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, W * 0.62);
+    feltGrad.addColorStop(0, '#1e8c55');
+    feltGrad.addColorStop(0.6, '#146b40');
+    feltGrad.addColorStop(1, '#0a4d2d');
+    ctx.fillStyle = feltGrad;
+    ctx.fillRect(L, T, PW, PH);
+
+    const vigT = ctx.createLinearGradient(0, T, 0, T + 44);
+    vigT.addColorStop(0, 'rgba(0,0,0,0.35)');
+    vigT.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vigT; ctx.fillRect(L, T, PW, 44);
+
+    const vigB = ctx.createLinearGradient(0, B, 0, B - 44);
+    vigB.addColorStop(0, 'rgba(0,0,0,0.35)');
+    vigB.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vigB; ctx.fillRect(L, B - 44, PW, 44);
+
+    const vigL = ctx.createLinearGradient(L, 0, L + 44, 0);
+    vigL.addColorStop(0, 'rgba(0,0,0,0.32)');
+    vigL.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vigL; ctx.fillRect(L, T, 44, PH);
+
+    const vigR = ctx.createLinearGradient(R, 0, R - 44, 0);
+    vigR.addColorStop(0, 'rgba(0,0,0,0.32)');
+    vigR.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = vigR; ctx.fillRect(R - 44, T, 44, PH);
+
+    // 开球线 + 置球点
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(L + PW * 0.25, T);
+    ctx.lineTo(L + PW * 0.25, B);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.beginPath();
+    ctx.arc(L + PW * 0.72, T + PH / 2, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 袋口
+    for (let i = 0; i < POCKETS.length; i++) {
+      const p = POCKETS[i];
+      const g = ctx.createRadialGradient(p.x, p.y - 5, 2, p.x, p.y, POCKET_R + 2);
+      g.addColorStop(0, '#000000');
+      g.addColorStop(0.68, '#070707');
+      g.addColorStop(1, '#2c2c2c');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, POCKET_R, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, POCKET_R, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function drawBall(b) {
+    const x = b.x, y = b.y, r = b.r;
+
+    ctx.beginPath();
+    ctx.ellipse(x + 2.5, y + 3.5, r * 0.98, r * 0.88, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    if (b.stripe) {
+      ctx.fillStyle = '#f6f6f2';
+      ctx.fill();
+      ctx.save();
+      ctx.clip();
+      ctx.fillStyle = b.color;
+      ctx.fillRect(x - r, y - r * 0.60, r * 2, r * 1.20);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = b.color;
+      ctx.fill();
+    }
+
+    if (b.num > 0) {
+      ctx.beginPath();
+      ctx.arc(x, y, r * 0.56, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      ctx.fillStyle = '#141414';
+      ctx.font = 'bold ' + (r * 0.82).toFixed(1) + 'px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(b.num), x, y + 0.5);
+    }
+
+    const g = ctx.createRadialGradient(
+      x - r * 0.36, y - r * 0.40, r * 0.05,
+      x, y, r * 1.05
+    );
+    g.addColorStop(0, 'rgba(255,255,255,0.62)');
+    g.addColorStop(0.42, 'rgba(255,255,255,0.06)');
+    g.addColorStop(0.82, 'rgba(0,0,0,0.10)');
+    g.addColorStop(1, 'rgba(0,0,0,0.38)');
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, r - 0.4, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+
+  function drawCue() {
+    const pull = 26 + power * 68;
+    const bx = cueBall.x - Math.cos(aimAngle) * (BALL_R + pull);
+    const by = cueBall.y - Math.sin(aimAngle) * (BALL_R + pull);
+    const len = 270;
+    const ex = bx - Math.cos(aimAngle) * len;
+    const ey = by - Math.sin(aimAngle) * len;
+
+    ctx.save();
+    ctx.lineCap = 'round';
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.30)';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(bx + 3, by + 4);
+    ctx.lineTo(ex + 3, ey + 4);
+    ctx.stroke();
+
+    const g = ctx.createLinearGradient(bx, by, ex, ey);
+    g.addColorStop(0, '#f7e9cf');
+    g.addColorStop(0.14, '#dcbc7c');
+    g.addColorStop(0.55, '#a9723c');
+    g.addColorStop(1, '#5d3417');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#2f6db5';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx - Math.cos(aimAngle) * 7, by - Math.sin(aimAngle) * 7);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawEffects() {
+    for (let i = effects.length - 1; i >= 0; i--) {
+      const e = effects[i];
+      e.t += 0.045;
+      if (e.t >= 1) { effects.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, 8 + e.t * 34, 0, Math.PI * 2);
+      ctx.strokeStyle = e.color;
+      ctx.globalAlpha = (1 - e.t) * 0.9;
+      ctx.lineWidth = 3 * (1 - e.t) + 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawPlayerPanel(i, x, y, w, h) {
+    const p = players[i];
+    const active = (turn === i) && !gameOver;
+
+    roundRect(x, y, w, h, 12);
+    ctx.fillStyle = active ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.30)';
+    ctx.fill();
+
+    if (active) {
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.arc(x + 22, y + h / 2 - 1, 6, 0, Math.PI * 2);
+    ctx.fillStyle = active ? p.color : 'rgba(255,255,255,0.22)';
+    ctx.fill();
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = active ? '#ffffff' : 'rgba(255,255,255,0.50)';
+    ctx.font = '700 16px system-ui, -apple-system, "PingFang SC", sans-serif';
+    ctx.fillText(p.name, x + 38, y + h / 2 - 1);
+
+    let info;
+    if (p.group === 'solid') {
+      info = countRemaining('solid') === 0 ? '全色 · 已清台' : '全色 · 剩 ' + countRemaining('solid');
+    } else if (p.group === 'stripe') {
+      info = countRemaining('stripe') === 0 ? '花色 · 已清台' : '花色 · 剩 ' + countRemaining('stripe');
+    } else {
+      info = '球组未定';
+    }
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.42)';
+    ctx.font = '600 14px system-ui, -apple-system, "PingFang SC", sans-serif';
+    ctx.fillText(info, x + w - 16, y + h / 2 - 1);
+  }
+
+  function drawPowerBar() {
+    const bw = 340, bh = 12;
+    const bx = (W - bw) / 2;
+    const by = 512;
+
+    roundRect(bx, by, bw, bh, bh / 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill();
+
+    if (power > 0.01) {
+      roundRect(bx, by, Math.max(bh, bw * power), bh, bh / 2);
+      const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      g.addColorStop(0, '#4ade80');
+      g.addColorStop(0.55, '#facc15');
+      g.addColorStop(1, '#ef4444');
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+
+    roundRect(bx, by, bw, bh, bh / 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  function drawPlacePreview() {
+    const p = placePreview;
+    const ok = canPlaceCue(p.x, p.y, placeMode);
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, BALL_R, 0, Math.PI * 2);
+    ctx.fillStyle = ok ? 'rgba(255,255,255,0.55)' : 'rgba(255,80,80,0.45)';
+    ctx.fill();
+    ctx.strokeStyle = ok ? '#ffffff' : '#ff5555';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (!ok) {
+      ctx.beginPath();
+      ctx.moveTo(p.x - 7, p.y - 7);
+      ctx.lineTo(p.x + 7, p.y + 7);
+      ctx.moveTo(p.x + 7, p.y - 7);
+      ctx.lineTo(p.x - 7, p.y + 7);
+      ctx.strokeStyle = '#ff5555';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+    }
+  }
+
+  function drawHintText() {
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '500 13px system-ui, -apple-system, "PingFang SC", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+
+    let txt = '';
+    if (gameOver) txt = '点击屏幕重新开始';
+    else if (placeMode === 'break') txt = '点击开球区放置白球';
+    else if (placeMode === 'anywhere') txt = '自由球 —— 点击台面放置白球';
+    else if (state === 'moving') txt = '';
+    else txt = '按住蓄力，松开击球';
+
+    ctx.fillText(txt, W / 2, 545);
+  }
+
+  function drawFlash() {
+    const alpha = Math.min(1, flashTimer / 0.5);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    ctx.font = '700 17px system-ui, -apple-system, "PingFang SC", sans-serif';
+    const tw = ctx.measureText(flashMsg).width;
+    const bw = tw + 40, bh = 36;
+    const bx = (W - bw) / 2;
+    const by = T + 14;
+
+    roundRect(bx, by, bw, bh, 18);
+    ctx.fillStyle = 'rgba(0,0,0,0.70)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffe9a8';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(flashMsg, W / 2, by + bh / 2 + 1);
+    ctx.restore();
+  }
+
+  function drawWinScreen() {
+    ctx.fillStyle = 'rgba(0,0,0,0.66)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const wc = players[winner].color;
+
+    ctx.fillStyle = wc;
+    ctx.font = 'bold 54px system-ui, -apple-system, "PingFang SC", sans-serif';
+    ctx.fillText('🏆  ' + players[winner].name + ' 获胜！', W / 2, H / 2 - 60);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.font = '600 18px system-ui, -apple-system, "PingFang SC", sans-serif';
+    if (lastShotInfo) {
+      ctx.fillText(lastShotInfo, W / 2, H / 2 - 2);
+    } else {
+      ctx.fillText('8 号球落袋 · 比赛结束', W / 2, H / 2 - 2);
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = '17px system-ui, -apple-system, "PingFang SC", sans-serif';
+    ctx.fillText('点击屏幕重新开始', W / 2, H / 2 + 60);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawTable();
+    drawEffects();
+
+    for (let i = 0; i < balls.length; i++) {
+      if (balls[i].active) drawBall(balls[i]);
+    }
+
+    if (!gameOver) {
+      if (placeMode !== 'none') {
+        drawPlacePreview();
+      } else if (state === 'aiming' && cueBall.active) {
+        drawCue();
+      }
+    }
+
+    drawPlayerPanel(0, L, 8, 300, 44);
+    drawPlayerPanel(1, R - 300, 8, 300, 44);
+    drawPowerBar();
+    drawHintText();
+
+    if (flashTimer > 0) drawFlash();
+    if (gameOver) drawWinScreen();
+  }
+
+  // ============================================================
+  //  交互
+  // ============================================================
+  function eventToCanvas(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (W / rect.width),
+      y: (e.clientY - rect.top)  * (H / rect.height)
+    };
+  }
+
+  function updateAim(e) {
+    if (!cueBall.active) return;
+    const p = eventToCanvas(e);
+    const dx = p.x - cueBall.x, dy = p.y - cueBall.y;
+    if (dx * dx + dy * dy > 100) aimAngle = Math.atan2(dy, dx);
+  }
+
+  function shoot() {
+    const speed = MIN_SHOT + power * (MAX_SHOT - MIN_SHOT);
+    cueBall.vx = Math.cos(aimAngle) * speed;
+    cueBall.vy = Math.sin(aimAngle) * speed;
+    state = 'moving';
+    power = 0;
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+
+    if (gameOver) { restart(); return; }
+
+    const p = eventToCanvas(e);
+
+    if (placeMode !== 'none') {
+      if (canPlaceCue(p.x, p.y, placeMode)) {
+        cueBall.x = p.x;
+        cueBall.y = p.y;
+        cueBall.vx = cueBall.vy = 0;
+        cueBall.active = true;
+        placeMode = 'none';
+      } else {
+        flash('这个位置放不下白球');
+      }
+      return;
+    }
+
+    if (state !== 'aiming' || !cueBall.active) return;
+
+    pointerDown = true;
+    power = 0;
+    updateAim(e);
+
+    if (canvas.setPointerCapture) {
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    const p = eventToCanvas(e);
+
+    if (placeMode !== 'none') {
+      placePreview.x = p.x;
+      placePreview.y = p.y;
+      return;
+    }
+    if (state === 'aiming') updateAim(e);
+  });
+
+  function endPointer(e) {
+    if (!pointerDown) return;
+    pointerDown = false;
+
+    if (state === 'aiming' && cueBall.active && power > 0.02) {
+      shoot();
+    } else {
+      power = 0;
+    }
+  }
+
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', function () {
+    pointerDown = false;
+    power = 0;
+  });
+
+  // ============================================================
+  //  重开
+  // ============================================================
+  function restart() {
+    turn = 0;
+    openTable = true;
+    placeMode = 'none';
+    isBreak = true;
+    gameOver = false;
+    winner = -1;
+    power = 0;
+    pointerDown = false;
+    state = 'aiming';
+    aimAngle = 0;
+    effects.length = 0;
+    flashTimer = 0;
+    flashMsg = '';
+    lastShotInfo = '';
+
+    players[0].group = null;
+    players[1].group = null;
+
+    shot.firstHit = null;
+    shot.potted = [];
+    shot.cuePotted = false;
+
+    initRack();
+    flash('玩家 1 开球');
+  }
+
+  // ============================================================
+  //  UI：规则面板 & 难度
+  // ============================================================
+  const rulesPanel = document.getElementById('rulesPanel');
+  const rulesBtn   = document.getElementById('rulesBtn');
+  const closeRules = document.getElementById('closeRules');
+
+  rulesBtn.addEventListener('click', function () {
+    rulesPanel.classList.remove('hidden');
+  });
+  closeRules.addEventListener('click', function () {
+    rulesPanel.classList.add('hidden');
+  });
+  rulesPanel.addEventListener('click', function (e) {
+    if (e.target === rulesPanel) rulesPanel.classList.add('hidden');
+  });
+
+  const DIFFICULTY = {
+    easy: {
+      POCKET_R: 26, DECEL: 520, WALL_DAMP: 0.74,
+      BALL_REST: 0.94, MAX_SHOT: 1700, MIN_SHOT: 200
+    },
+    normal: {
+      POCKET_R: 21, DECEL: 400, WALL_DAMP: 0.80,
+      BALL_REST: 0.95, MAX_SHOT: 2000, MIN_SHOT: 220
+    },
+    hard: {
+      POCKET_R: 17, DECEL: 300, WALL_DAMP: 0.86,
+      BALL_REST: 0.96, MAX_SHOT: 2300, MIN_SHOT: 240
+    }
+  };
+
+  function setDifficulty(name) {
+    const d = DIFFICULTY[name];
+    if (!d) return;
+    POCKET_R  = d.POCKET_R;
+    DECEL     = d.DECEL;
+    WALL_DAMP = d.WALL_DAMP;
+    BALL_REST = d.BALL_REST;
+    MAX_SHOT  = d.MAX_SHOT;
+    MIN_SHOT  = d.MIN_SHOT;
+
+    const btns = document.querySelectorAll('#difficulty button');
+    for (let i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle('active', btns[i].dataset.diff === name);
+    }
+
+    // 避免球卡进新袋口
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (!b.active) continue;
+      for (let p = 0; p < POCKETS.length; p++) {
+        const pk = POCKETS[p];
+        if (Math.hypot(b.x - pk.x, b.y - pk.y) < POCKET_R + BALL_R * 0.5) {
+          b.x = L + PW * 0.25;
+          b.y = T + PH / 2;
+          b.vx = b.vy = 0;
+          break;
+        }
+      }
+    }
+
+    const label = { easy: '简单', normal: '普通', hard: '困难' }[name];
+    flash('难度：' + label);
+  }
+
+  const diffBtns = document.querySelectorAll('#difficulty button');
+  for (let i = 0; i < diffBtns.length; i++) {
+    diffBtns[i].addEventListener('click', function () {
+      setDifficulty(this.dataset.diff);
+    });
+  }
+
+  // ============================================================
+  //  主循环
+  // ============================================================
+  let lastTime = performance.now();
+  let accumulator = 0;
+
+  function allStopped() {
+    for (let i = 0; i < balls.length; i++) {
+      const b = balls[i];
+      if (b.active && (b.vx !== 0 || b.vy !== 0)) return false;
+    }
+    return true;
+  }
+
+  function frame(now) {
+    let dt = (now - lastTime) / 1000;
+    lastTime = now;
+    if (dt > 0.05) dt = 0.05;
+    if (dt < 0) dt = 0;
+
+    if (flashTimer > 0) flashTimer -= dt;
+
+    if (pointerDown && state === 'aiming' && !gameOver && placeMode === 'none') {
+      power = Math.min(1, power + dt * 1.0);
+    }
+
+    accumulator += dt;
+    let steps = 0;
+    while (accumulator >= FIXED_DT && steps < 40) {
+      physics(FIXED_DT);
+      accumulator -= FIXED_DT;
+      steps++;
+    }
+    if (steps >= 40) accumulator = 0;
+
+    if (state === 'moving' && allStopped()) {
+      state = 'aiming';
+      endShot();
+    }
+
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  // ============================================================
+  //  启动
+  // ============================================================
+  initRack();
+  flash('玩家 1 开球');
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
