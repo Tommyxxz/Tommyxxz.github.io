@@ -25,6 +25,26 @@
     gap: 10px;
     flex-wrap: wrap;
   }
+  #roomBadge {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.14);
+    border: 1px solid rgba(59,130,246,0.35);
+    color: #a9d0ff;
+    padding: 9px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+  #roomBadge .num {
+    color: #fff;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    padding: 1px 10px;
+    border-radius: 7px;
+    font-family: ui-monospace, Menlo, monospace;
+    letter-spacing: 2px;
+  }
   #toolbar > button {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.16);
@@ -93,6 +113,118 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* ========== 大厅 ========== */
+  #lobby {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at 50% 30%, #1b2333, #07090d 78%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; padding: 16px;
+  }
+  #lobby.hidden { display: none; }
+  #lobbyCard {
+    background: linear-gradient(160deg, #1c2636, #0e1520);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 24px;
+    padding: 36px 34px 30px;
+    width: min(92vw, 440px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+    animation: pop 0.25s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+  #lobbyCard h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  #lobbyCard .sub {
+    margin: 0 0 26px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.42);
+    text-align: center;
+  }
+  .lobby-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    margin-bottom: 10px;
+  }
+  .lobby-btn.primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(59,130,246,0.42);
+  }
+  .lobby-btn.primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .lobby-btn.primary:active { transform: scale(0.98); }
+  .lobby-btn.secondary {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.88);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .lobby-btn.secondary:hover { background: rgba(255,255,255,0.14); }
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: rgba(255,255,255,0.28);
+    font-size: 12px;
+    margin: 20px 0;
+    letter-spacing: 2px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.10);
+  }
+  #joinRow { display: flex; gap: 8px; margin-bottom: 4px; }
+  #roomInput {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    font-size: 18px;
+    font-family: ui-monospace, Menlo, monospace;
+    letter-spacing: 4px;
+    text-align: center;
+    outline: none;
+    transition: border 0.15s, box-shadow 0.15s;
+  }
+  #roomInput::placeholder { letter-spacing: 1px; font-size: 14px; color: rgba(255,255,255,0.25); }
+  #roomInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.22);
+  }
+  #joinBtn {
+    padding: 13px 22px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #joinBtn:hover { opacity: 0.9; }
+  #lobbyMsg {
+    margin-top: 16px;
+    min-height: 20px;
+    font-size: 13px;
+    text-align: center;
+    color: #ff9b6a;
+  }
+
   /* ========== 规则面板 ========== */
   #rulesPanel {
     position: fixed;
@@ -101,7 +233,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 150;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     padding: 16px;
@@ -118,10 +250,6 @@
     overflow-y: auto;
     box-shadow: 0 24px 70px rgba(0,0,0,0.7);
     animation: pop 0.22s ease-out;
-  }
-  @keyframes pop {
-    from { transform: scale(0.94); opacity: 0; }
-    to   { transform: scale(1);    opacity: 1; }
   }
   #rulesContent h2 {
     margin: 0 0 4px;
@@ -197,6 +325,7 @@
     #difficulty button { padding: 7px 11px; font-size: 12px; }
     #difficulty .label { padding: 0 6px 0 4px; font-size: 12px; }
     #rulesContent { padding: 20px 18px 18px; }
+    #roomBadge { font-size: 12px; padding: 8px 12px; }
   }
 </style>
 </head>
@@ -204,6 +333,7 @@
 
 <div id="wrap">
   <div id="toolbar">
+    <div id="roomBadge">房间 <span class="num" id="roomNum">----</span></div>
     <button id="rulesBtn">📖 游戏规则</button>
     <div id="difficulty">
       <span class="label">难度</span>
@@ -213,6 +343,27 @@
     </div>
   </div>
   <canvas id="game"></canvas>
+</div>
+
+<!-- ============ 大厅 ============ -->
+<div id="lobby">
+  <div id="lobbyCard">
+    <h1>🎱 双人台球</h1>
+    <p class="sub">八球规则 · 本地 / 联机</p>
+
+    <button class="lobby-btn secondary" id="localBtn">🎮 单机双人（同一设备轮流玩）</button>
+
+    <div class="divider">联机对战</div>
+
+    <button class="lobby-btn primary" id="createBtn">🏠 创建房间</button>
+
+    <div id="joinRow">
+      <input id="roomInput" maxlength="4" inputmode="numeric" placeholder="输入 4 位房间号">
+      <button id="joinBtn">加入</button>
+    </div>
+
+    <div id="lobbyMsg"></div>
+  </div>
 </div>
 
 <!-- ============ 规则面板 ============ -->
@@ -268,39 +419,26 @@
     <div class="rule-block">
       <h3>🖱️ 操作方式</h3>
       <p>按住鼠标 / 手指蓄力（力度条会变长），松开击球。</p>
+      <p class="foul-tip">联机：轮流击球，非自己回合请等待。</p>
     </div>
 
     <button id="closeRules">知道了，开始游戏</button>
   </div>
 </div>
 
+<!-- PeerJS (免费的 WebRTC P2P 信令服务) -->
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 (function () {
   'use strict';
 
   // ============================================================
-  //  画布与基础常量
+  //  常量
   // ============================================================
   const W = 960, H = 560;
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const DPR = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = W * DPR;
-  canvas.height = H * DPR;
-  ctx.scale(DPR, DPR);
-
   const L = 50, T = 64, R = 910, B = 486;
   const PW = R - L, PH = B - T;
   const BALL_R = 10;
-
-  // ---- 难度相关 ----
-  let POCKET_R  = 21;
-  let DECEL     = 400;
-  let WALL_DAMP = 0.80;
-  let BALL_REST = 0.95;
-  let MAX_SHOT  = 2000;
-  let MIN_SHOT  = 220;
-
   const FIXED_DT = 1 / 300;
 
   const POCKETS = [
@@ -319,44 +457,697 @@
     13:'#f07818', 14:'#17a34a', 15:'#8e2f2f'
   };
 
-  // ============================================================
-  //  游戏状态
-  // ============================================================
-  const cueBall = {
-    x: 0, y: 0, vx: 0, vy: 0, r: BALL_R,
-    color: '#ffffff', num: 0, active: true, cue: true, stripe: false
+  const DIFFICULTY = {
+    easy:   { POCKET_R: 26, DECEL: 520, WALL_DAMP: 0.74, BALL_REST: 0.94, MAX_SHOT: 1700, MIN_SHOT: 200 },
+    normal: { POCKET_R: 21, DECEL: 400, WALL_DAMP: 0.80, BALL_REST: 0.95, MAX_SHOT: 2000, MIN_SHOT: 220 },
+    hard:   { POCKET_R: 17, DECEL: 300, WALL_DAMP: 0.86, BALL_REST: 0.96, MAX_SHOT: 2300, MIN_SHOT: 240 }
   };
-  const balls = [cueBall];
-  const effects = [];
 
-  const players = [
-    { name: '玩家 1', group: null, color: '#4a9eff' },
-    { name: '玩家 2', group: null, color: '#ff7a4a' }
-  ];
+  function groupOf(num) {
+    if (num >= 1 && num <= 7)  return 'solid';
+    if (num >= 9 && num <= 15) return 'stripe';
+    return 'eight';
+  }
+  function groupName(g) {
+    if (g === 'solid')  return '全色球 1-7';
+    if (g === 'stripe') return '花色球 9-15';
+    if (g === 'eight')  return '8 号黑球';
+    return '任意球';
+  }
 
-  let turn        = 0;
-  let openTable   = true;
-  let placeMode   = 'none';   // 'none' | 'break' | 'anywhere'
-  let isBreak     = true;
-  let gameOver    = false;
-  let winner      = -1;
+  // ============================================================
+  //  游戏引擎（权威物理）
+  // ============================================================
+  class GameEngine {
+    constructor(difficulty) {
+      this.difficulty = difficulty || 'normal';
+      this.applyDiff();
+      this.reset();
+    }
 
-  let state       = 'aiming';
+    applyDiff() {
+      const d = DIFFICULTY[this.difficulty];
+      this.POCKET_R  = d.POCKET_R;
+      this.DECEL     = d.DECEL;
+      this.WALL_DAMP = d.WALL_DAMP;
+      this.BALL_REST = d.BALL_REST;
+      this.MAX_SHOT  = d.MAX_SHOT;
+      this.MIN_SHOT  = d.MIN_SHOT;
+    }
+
+    setDifficulty(level) {
+      if (!DIFFICULTY[level]) return false;
+      this.difficulty = level;
+      this.applyDiff();
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (!b.active) continue;
+        for (let p = 0; p < POCKETS.length; p++) {
+          const pk = POCKETS[p];
+          if (Math.hypot(b.x - pk.x, b.y - pk.y) < this.POCKET_R + BALL_R * 0.5) {
+            b.x = L + PW * 0.25;
+            b.y = T + PH / 2;
+            b.vx = b.vy = 0;
+            break;
+          }
+        }
+      }
+      return true;
+    }
+
+    reset() {
+      this.turn = 0;
+      this.openTable = true;
+      this.placeMode = 'none';
+      this.isBreak = true;
+      this.gameOver = false;
+      this.winner = -1;
+      this.state = 'aiming';
+      this.groups = [null, null];
+      this.acc = 0;
+      this.flashMsg = '';
+      this.lastShotInfo = '';
+      this.shot = { firstHit: null, potted: [], cuePotted: false };
+      this.effects = [];
+      this.initRack();
+    }
+
+    initRack() {
+      this.balls = [];
+      this.cueBall = {
+        x: L + PW * 0.25, y: T + PH / 2, vx: 0, vy: 0, r: BALL_R,
+        num: 0, color: '#ffffff', cue: true, stripe: false, active: true
+      };
+      this.balls.push(this.cueBall);
+
+      const nums = [1,2,3,4,5,6,7,9,10,11,12,13,14,15];
+      for (let i = nums.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = nums[i]; nums[i] = nums[j]; nums[j] = t;
+      }
+      nums.splice(4, 0, 8);
+
+      const apexX = L + PW * 0.72;
+      const cy = T + PH / 2;
+      const d = 2 * BALL_R + 0.9;
+      const dxRow = d * Math.sqrt(3) / 2;
+
+      let idx = 0;
+      for (let row = 0; row < 5; row++) {
+        for (let k = 0; k <= row; k++) {
+          const num = nums[idx++];
+          this.balls.push({
+            x: apexX + row * dxRow,
+            y: cy + (k - row / 2) * d,
+            vx: 0, vy: 0, r: BALL_R,
+            num: num, color: COLORS[num],
+            stripe: num > 8, active: true, cue: false
+          });
+        }
+      }
+    }
+
+    countRemaining(group) {
+      let n = 0;
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (b.active && !b.cue && groupOf(b.num) === group) n++;
+      }
+      return n;
+    }
+
+    isFreeSpot(x, y, selfBall) {
+      if (x - BALL_R < L + 1 || x + BALL_R > R - 1) return false;
+      if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+      for (let i = 0; i < POCKETS.length; i++) {
+        const p = POCKETS[i];
+        if (Math.hypot(x - p.x, y - p.y) < this.POCKET_R + BALL_R) return false;
+      }
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (b === selfBall || !b.active) continue;
+        if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
+      }
+      return true;
+    }
+
+    canPlaceCue(x, y, mode) {
+      if (mode === 'break') {
+        const maxX = L + PW * 0.25;
+        if (x - BALL_R < L + 1 || x + BALL_R > maxX) return false;
+        if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+      } else {
+        if (x - BALL_R < L + 1 || x + BALL_R > R - 1) return false;
+        if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
+      }
+      for (let i = 0; i < POCKETS.length; i++) {
+        const p = POCKETS[i];
+        if (Math.hypot(x - p.x, y - p.y) < this.POCKET_R + BALL_R) return false;
+      }
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (b.cue || !b.active) continue;
+        if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
+      }
+      return true;
+    }
+
+    respotEight() {
+      let eight = null;
+      for (let i = 0; i < this.balls.length; i++) {
+        if (this.balls[i].num === 8) { eight = this.balls[i]; break; }
+      }
+      if (!eight) return;
+      eight.active = true;
+      eight.vx = eight.vy = 0;
+
+      const baseX = L + PW * 0.72;
+      const baseY = T + PH / 2;
+
+      if (this.isFreeSpot(baseX, baseY, eight)) { eight.x = baseX; eight.y = baseY; return; }
+      for (let step = 16; step < 700; step += 16) {
+        if (this.isFreeSpot(baseX + step, baseY, eight)) { eight.x = baseX + step; eight.y = baseY; return; }
+        if (this.isFreeSpot(baseX - step, baseY, eight)) { eight.x = baseX - step; eight.y = baseY; return; }
+      }
+      for (let ring = 1; ring < 14; ring++) {
+        for (let a = 0; a < 12; a++) {
+          const ang = a / 12 * Math.PI * 2;
+          const px = baseX + Math.cos(ang) * ring * 22;
+          const py = baseY + Math.sin(ang) * ring * 22;
+          if (this.isFreeSpot(px, py, eight)) { eight.x = px; eight.y = py; return; }
+        }
+      }
+      eight.x = baseX; eight.y = baseY;
+    }
+
+    physics(dt) {
+      const cfg = this;
+      // 积分 + 摩擦
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (!b.active) continue;
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        const sp = Math.hypot(b.vx, b.vy);
+        if (sp > 0) {
+          const ns = sp - cfg.DECEL * dt;
+          if (ns <= 0.5) { b.vx = 0; b.vy = 0; }
+          else { const k = ns / sp; b.vx *= k; b.vy *= k; }
+        }
+      }
+      // 球-球碰撞
+      for (let i = 0; i < this.balls.length; i++) {
+        const a = this.balls[i];
+        if (!a.active) continue;
+        for (let j = i + 1; j < this.balls.length; j++) {
+          const b = this.balls[j];
+          if (!b.active) continue;
+
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const minD = a.r + b.r;
+          const d2 = dx * dx + dy * dy;
+          if (d2 >= minD * minD || d2 === 0) continue;
+
+          const dist = Math.sqrt(d2);
+          const nx = dx / dist, ny = dy / dist;
+          const overlap = minD - dist;
+
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          b.x += nx * overlap * 0.5;
+          b.y += ny * overlap * 0.5;
+
+          const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+          const vn = rvx * nx + rvy * ny;
+          if (vn > 0) continue;
+
+          const imp = -(1 + cfg.BALL_REST) * vn / 2;
+          a.vx -= imp * nx; a.vy -= imp * ny;
+          b.vx += imp * nx; b.vy += imp * ny;
+
+          if (this.shot.firstHit === null) {
+            if (a.cue && !b.cue) this.shot.firstHit = b.num;
+            else if (b.cue && !a.cue) this.shot.firstHit = a.num;
+          }
+        }
+      }
+      // 落袋
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (!b.active) continue;
+        for (let p = 0; p < POCKETS.length; p++) {
+          const pk = POCKETS[p];
+          const dx = b.x - pk.x, dy = b.y - pk.y;
+          if (dx * dx + dy * dy < cfg.POCKET_R * cfg.POCKET_R) {
+            this.handlePocket(b);
+            break;
+          }
+        }
+      }
+      // 库边
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (!b.active) continue;
+        if (b.x - b.r < L) { b.x = L + b.r; b.vx =  Math.abs(b.vx) * cfg.WALL_DAMP; }
+        if (b.x + b.r > R) { b.x = R - b.r; b.vx = -Math.abs(b.vx) * cfg.WALL_DAMP; }
+        if (b.y - b.r < T) { b.y = T + b.r; b.vy =  Math.abs(b.vy) * cfg.WALL_DAMP; }
+        if (b.y + b.r > B) { b.y = B - b.r; b.vy = -Math.abs(b.vy) * cfg.WALL_DAMP; }
+      }
+    }
+
+    handlePocket(b) {
+      b.active = false;
+      b.vx = b.vy = 0;
+      this.effects.push({ x: b.x, y: b.y, t: 0, color: b.cue ? '#ffffff' : b.color });
+      if (b.cue) this.shot.cuePotted = true;
+      else this.shot.potted.push(b.num);
+    }
+
+    allStopped() {
+      for (let i = 0; i < this.balls.length; i++) {
+        const b = this.balls[i];
+        if (b.active && (b.vx !== 0 || b.vy !== 0)) return false;
+      }
+      return true;
+    }
+
+    shoot(angle, power) {
+      if (!this.cueBall || !this.cueBall.active) return false;
+      power = Math.max(0, Math.min(1, power));
+      const speed = this.MIN_SHOT + power * (this.MAX_SHOT - this.MIN_SHOT);
+      this.cueBall.vx = Math.cos(angle) * speed;
+      this.cueBall.vy = Math.sin(angle) * speed;
+      this.state = 'moving';
+      this.acc = 0;
+      return true;
+    }
+
+    placeCue(x, y) {
+      if (this.placeMode === 'none') return false;
+      if (!this.canPlaceCue(x, y, this.placeMode)) return false;
+      this.cueBall.x = x;
+      this.cueBall.y = y;
+      this.cueBall.vx = this.cueBall.vy = 0;
+      this.cueBall.active = true;
+      this.placeMode = 'none';
+      return true;
+    }
+
+    step(dt) {
+      // 特效衰减
+      for (let i = this.effects.length - 1; i >= 0; i--) {
+        this.effects[i].t += 0.045;
+        if (this.effects[i].t >= 1) this.effects.splice(i, 1);
+      }
+
+      if (this.state !== 'moving') return null;
+      this.acc += dt;
+      let steps = 0;
+      while (this.acc >= FIXED_DT && steps < 40) {
+        this.physics(FIXED_DT);
+        this.acc -= FIXED_DT;
+        steps++;
+      }
+      if (steps >= 40) this.acc = 0;
+      if (this.allStopped()) {
+        this.state = 'aiming';
+        this.flashMsg = '';
+        this.endShot();
+        return this.flashMsg || null;
+      }
+      return null;
+    }
+
+    resetShot() {
+      this.shot = { firstHit: null, potted: [], cuePotted: false };
+    }
+
+    endShot() {
+      const my = this.turn;
+      const myGroup = this.groups[my];
+
+      let foul = false, reason = '';
+      const potted = this.shot.potted.slice();
+      let eightPotted = potted.indexOf(8) >= 0;
+
+      if (eightPotted && this.isBreak) {
+        potted.splice(potted.indexOf(8), 1);
+        eightPotted = false;
+        this.respotEight();
+        this.flashMsg = '开球打进 8 号球 · 已重新摆放';
+      }
+
+      if (this.shot.cuePotted) {
+        foul = true; reason = '母球落袋';
+      } else if (this.shot.firstHit === null) {
+        foul = true; reason = '空杆';
+      } else if (!this.openTable && myGroup) {
+        const remain = this.countRemaining(myGroup);
+        if (remain === 0) {
+          if (this.shot.firstHit !== 8) { foul = true; reason = '未先碰 8 号球'; }
+        } else {
+          if (groupOf(this.shot.firstHit) !== myGroup) {
+            if (this.shot.firstHit === 8) { foul = true; reason = '未清台先碰 8 号球'; }
+            else { foul = true; reason = '先碰对方球'; }
+          }
+        }
+      }
+
+      if (eightPotted) {
+        const cleared = myGroup && this.countRemaining(myGroup) === 0;
+        this.gameOver = true;
+        if (cleared && !foul) {
+          this.winner = my;
+          this.lastShotInfo = '玩家 ' + (my + 1) + ' 清台后打进 8 号球 · 获胜';
+        } else {
+          this.winner = 1 - my;
+          if (!cleared) this.lastShotInfo = '玩家 ' + (my + 1) + ' 提前打进 8 号球 · 判负';
+          else this.lastShotInfo = '玩家 ' + (my + 1) + ' 犯规打进 8 号球 · 判负';
+          if (!this.flashMsg) this.flashMsg = this.lastShotInfo;
+        }
+        this.isBreak = false;
+        this.resetShot();
+        return;
+      }
+
+      if (this.openTable && !foul && potted.length > 0) {
+        let first = null;
+        for (let i = 0; i < potted.length; i++) {
+          if (potted[i] !== 8) { first = potted[i]; break; }
+        }
+        if (first !== undefined && first !== null) {
+          const g = groupOf(first);
+          this.groups[my] = g;
+          this.groups[1 - my] = (g === 'solid') ? 'stripe' : 'solid';
+          this.openTable = false;
+          this.flashMsg = '玩家 ' + (my + 1) + ' → ' + groupName(g);
+        }
+      }
+
+      let continueTurn = false;
+      if (!foul) {
+        const grp = this.groups[my];
+        if (grp) {
+          continueTurn = potted.some(function (n) { return groupOf(n) === grp; });
+        } else {
+          continueTurn = potted.length > 0;
+        }
+      }
+
+      if (foul) {
+        this.turn = 1 - my;
+        this.cueBall.active = false;
+        this.placeMode = 'anywhere';
+        this.flashMsg = '犯规 · ' + reason;
+      } else if (continueTurn) {
+        const grp = this.groups[my];
+        if (grp && this.countRemaining(grp) === 0) {
+          this.flashMsg = '已清台 · 目标 8 号球';
+        }
+        if (!this.cueBall.active) this.placeMode = 'anywhere';
+      } else {
+        this.turn = 1 - my;
+        if (!this.cueBall.active) this.placeMode = 'anywhere';
+      }
+
+      this.resetShot();
+      this.isBreak = false;
+    }
+
+    snapshot() {
+      return {
+        balls: this.balls.map(function (b) {
+          return {
+            x: +b.x.toFixed(2),
+            y: +b.y.toFixed(2),
+            n: b.num,
+            c: b.color,
+            s: b.stripe,
+            a: b.active,
+            cu: b.cue
+          };
+        }),
+        turn: this.turn,
+        state: this.state,
+        open: this.openTable,
+        place: this.placeMode,
+        over: this.gameOver,
+        winner: this.winner,
+        groups: this.groups.slice(),
+        isBreak: this.isBreak,
+        lastInfo: this.lastShotInfo,
+        pocketR: this.POCKET_R,
+        difficulty: this.difficulty
+      };
+    }
+  }
+
+  // ============================================================
+  //  渲染视图（本地 / 客机均使用）
+  // ============================================================
+  let view = {
+    balls: [],
+    turn: 0,
+    state: 'aiming',
+    open: true,
+    place: 'none',
+    over: false,
+    winner: -1,
+    groups: [null, null],
+    isBreak: true,
+    lastInfo: '',
+    pocketR: 21,
+    difficulty: 'normal',
+    effects: []
+  };
+
+  function applySnapshot(snap) {
+    // 检测落袋 → 播放特效
+    for (let i = 0; i < snap.balls.length; i++) {
+      const newB = snap.balls[i];
+      const oldB = view.balls[i];
+      if (oldB && oldB.a && !newB.a) {
+        view.effects.push({
+          x: newB.x, y: newB.y, t: 0,
+          color: newB.cu ? '#ffffff' : newB.c
+        });
+      }
+    }
+    view.balls      = snap.balls;
+    view.turn       = snap.turn;
+    view.state      = snap.state;
+    view.open       = snap.open;
+    view.place      = snap.place;
+    view.over       = snap.over;
+    view.winner     = snap.winner;
+    view.groups     = snap.groups;
+    view.isBreak    = snap.isBreak;
+    view.lastInfo   = snap.lastInfo;
+    view.pocketR    = snap.pocketR;
+    view.difficulty = snap.difficulty;
+  }
+
+  // ============================================================
+  //  网络 / 房间
+  // ============================================================
+  let myRole      = 'local';    // 'local' | 'host' | 'guest'
+  let mySeat      = -1;         // 0 / 1 / -1(本地)
+  let roomId      = '';
+  let playerCount = 2;
+  let inRoom      = false;
+  let engine      = null;
+  let peer        = null;
+  let conn        = null;
+
+  const PEER_PREFIX = 'billiards-xz-';
+
+  function sendNet(msg) {
+    if (conn && conn.open) {
+      try { conn.send(msg); } catch (e) {}
+    }
+  }
+
+  function handleNetMessage(msg) {
+    if (!msg || !msg.t) return;
+
+    if (myRole === 'host' && engine) {
+      if (msg.t === 'shoot' && msg.seat === 1) {
+        if (engine.state === 'aiming' && !engine.gameOver && engine.placeMode === 'none') {
+          if (engine.turn === 1 && engine.cueBall.active) {
+            engine.shoot(msg.angle, msg.power);
+          }
+        }
+      } else if (msg.t === 'place' && msg.seat === 1) {
+        if (engine.placeMode !== 'none' && engine.turn === 1) {
+          engine.placeCue(msg.x, msg.y);
+        }
+      } else if (msg.t === 'diff') {
+        engine.setDifficulty(msg.level);
+      } else if (msg.t === 'restart') {
+        if (engine.gameOver) engine.reset();
+      }
+    } else if (myRole === 'guest') {
+      if (msg.t === 'state') {
+        applySnapshot(msg.state);
+      } else if (msg.t === 'flash') {
+        flash(msg.msg);
+      } else if (msg.t === 'meta') {
+        playerCount = msg.players;
+        if (msg.seat !== undefined) mySeat = msg.seat;
+      }
+    }
+  }
+
+  function setupConn() {
+    conn.on('data', handleNetMessage);
+    conn.on('close', function () {
+      flash('对手已断开连接');
+      setTimeout(backToLobby, 1600);
+    });
+    conn.on('error', function (err) {
+      console.error('连接错误', err);
+    });
+  }
+
+  function createRoom() {
+    if (typeof Peer === 'undefined') {
+      lobbyMsg.textContent = '联机组件加载失败，请刷新或使用单机模式';
+      return;
+    }
+    const rid = String(Math.floor(1000 + Math.random() * 9000));
+    roomId = rid;
+    myRole = 'host';
+    mySeat = 0;
+    playerCount = 1;
+
+    lobbyMsg.textContent = '正在创建房间…';
+
+    peer = new Peer(PEER_PREFIX + rid, { debug: 1 });
+
+    peer.on('open', function () {
+      inRoom = true;
+      engine = new GameEngine('normal');
+      applySnapshot(engine.snapshot());
+      showRoomUI();
+      flash('房间 ' + rid + ' 已创建 · 分享给好友');
+    });
+
+    peer.on('error', function (err) {
+      if (err.type === 'unavailable-id') {
+        // 房间号冲突，重试
+        try { peer.destroy(); } catch (e) {}
+        createRoom();
+      } else if (err.type === 'network' || err.type === 'server-error') {
+        lobbyMsg.textContent = '信令服务器繁忙，请稍后重试';
+        try { peer.destroy(); } catch (e) {}
+      } else {
+        lobbyMsg.textContent = '创建失败：' + err.type;
+      }
+    });
+
+    peer.on('connection', function (c) {
+      if (conn && conn.open) {
+        try { c.close(); } catch (e) {}
+        return;
+      }
+      conn = c;
+      setupConn();
+      playerCount = 2;
+      flash('对手已加入 · 比赛开始');
+
+      // 给客机分配座位 1
+      const sendMeta = function () {
+        sendNet({ t: 'meta', players: playerCount, seat: 1 });
+      };
+      if (conn.open) sendMeta();
+      else conn.on('open', sendMeta);
+    });
+  }
+
+  function joinRoom(rid) {
+    if (typeof Peer === 'undefined') {
+      lobbyMsg.textContent = '联机组件加载失败，请刷新或使用单机模式';
+      return;
+    }
+    myRole = 'guest';
+    mySeat = 1;
+    roomId = rid;
+    playerCount = 2;
+
+    lobbyMsg.textContent = '正在连接房间…';
+
+    peer = new Peer(undefined, { debug: 1 });
+
+    let opened = false;
+    peer.on('open', function () {
+      conn = peer.connect(PEER_PREFIX + rid, { reliable: true });
+      setupConn();
+
+      conn.on('open', function () {
+        opened = true;
+        inRoom = true;
+        showRoomUI();
+        flash('已加入房间 ' + rid);
+        sendNet({ t: 'hello' });
+      });
+    });
+
+    peer.on('error', function (err) {
+      if (err.type === 'peer-unavailable') {
+        lobbyMsg.textContent = '房间不存在或已满';
+      } else if (err.type === 'network' || err.type === 'server-error') {
+        lobbyMsg.textContent = '信令服务器繁忙，请稍后重试';
+      } else {
+        lobbyMsg.textContent = '连接失败：' + err.type;
+      }
+      if (peer) { try { peer.destroy(); } catch (e) {} }
+    });
+
+    setTimeout(function () {
+      if (!opened && !inRoom) {
+        lobbyMsg.textContent = '连接超时，房间可能不存在';
+        if (peer) { try { peer.destroy(); } catch (e) {} }
+      }
+    }, 12000);
+  }
+
+  function backToLobby() {
+    try { if (conn) conn.close(); } catch (e) {}
+    try { if (peer) peer.destroy(); } catch (e) {}
+    conn = null;
+    peer = null;
+    inRoom = false;
+    myRole = 'local';
+    mySeat = -1;
+    playerCount = 2;
+    roomId = '';
+    engine = null;
+    roomNumEl.textContent = '----';
+    lobby.classList.remove('hidden');
+  }
+
+  // ============================================================
+  //  画布 / 渲染
+  // ============================================================
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  ctx.scale(DPR, DPR);
+
+  const lobby        = document.getElementById('lobby');
+  const lobbyMsg     = document.getElementById('lobbyMsg');
+  const roomInput    = document.getElementById('roomInput');
+  const roomNumEl    = document.getElementById('roomNum');
+
   let aimAngle    = 0;
   let power       = 0;
   let pointerDown = false;
+  const placePreview = { x: 0, y: 0, dragged: false };
+  let flashMsg   = '';
+  let flashTimer = 0;
 
-  let flashMsg = '', flashTimer = 0;
-  const placePreview = { x: 0, y: 0, valid: false };
-
-  let shot = { firstHit: null, potted: [], cuePotted: false };
-
-  // 上一杆结果（结算画面用）
-  let lastShotInfo = '';
-
-  // ============================================================
-  //  工具函数
-  // ============================================================
   function roundRect(x, y, w, h, r) {
     r = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
@@ -368,43 +1159,14 @@
     ctx.closePath();
   }
 
-  function groupOf(num) {
-    if (num >= 1 && num <= 7)  return 'solid';
-    if (num >= 9 && num <= 15) return 'stripe';
-    return 'eight';
-  }
-
-  function countRemaining(group) {
-    let n = 0;
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (b.active && !b.cue && groupOf(b.num) === group) n++;
-    }
-    return n;
-  }
-
   function flash(msg) { flashMsg = msg; flashTimer = 2.4; }
 
-  function groupName(g) {
-    if (g === 'solid')  return '全色球 1-7';
-    if (g === 'stripe') return '花色球 9-15';
-    if (g === 'eight')  return '8 号黑球';
-    return '任意球';
-  }
-
-  function isFreeSpot(x, y, self) {
-    if (x - BALL_R < L + 1 || x + BALL_R > R - 1) return false;
-    if (y - BALL_R < T + 1 || y + BALL_R > B - 1) return false;
-    for (let i = 0; i < POCKETS.length; i++) {
-      const p = POCKETS[i];
-      if (Math.hypot(x - p.x, y - p.y) < POCKET_R + BALL_R) return false;
-    }
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (b === self || !b.active) continue;
-      if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
-    }
-    return true;
+  function isMyTurn() {
+    if (myRole === 'local') return true;
+    if (!inRoom) return false;
+    if (myRole === 'host' && playerCount < 2) return false; // 等待对手
+    if (mySeat < 0) return false;
+    return view.turn === mySeat;
   }
 
   function canPlaceCue(x, y, mode) {
@@ -418,274 +1180,17 @@
     }
     for (let i = 0; i < POCKETS.length; i++) {
       const p = POCKETS[i];
-      if (Math.hypot(x - p.x, y - p.y) < POCKET_R + BALL_R) return false;
+      if (Math.hypot(x - p.x, y - p.y) < view.pocketR + BALL_R) return false;
     }
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (b.cue || !b.active) continue;
+    for (let i = 0; i < view.balls.length; i++) {
+      const b = view.balls[i];
+      if (b.cu || !b.a) continue;
       if (Math.hypot(x - b.x, y - b.y) < 2 * BALL_R + 1.5) return false;
     }
     return true;
   }
 
-  // ============================================================
-  //  摆球
-  // ============================================================
-  function initRack() {
-    balls.length = 0;
-    balls.push(cueBall);
-
-    cueBall.active = true;
-    cueBall.vx = cueBall.vy = 0;
-    cueBall.x = L + PW * 0.25;
-    cueBall.y = T + PH / 2;
-
-    const nums = [1,2,3,4,5,6,7,9,10,11,12,13,14,15];
-    for (let i = nums.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const t = nums[i]; nums[i] = nums[j]; nums[j] = t;
-    }
-    nums.splice(4, 0, 8);
-
-    const apexX = L + PW * 0.72;
-    const cy = T + PH / 2;
-    const d = 2 * BALL_R + 0.9;
-    const dxRow = d * Math.sqrt(3) / 2;
-
-    let idx = 0;
-    for (let row = 0; row < 5; row++) {
-      for (let k = 0; k <= row; k++) {
-        const num = nums[idx++];
-        balls.push({
-          x: apexX + row * dxRow,
-          y: cy + (k - row / 2) * d,
-          vx: 0, vy: 0, r: BALL_R,
-          color: COLORS[num],
-          num: num,
-          stripe: num > 8,
-          active: true,
-          cue: false
-        });
-      }
-    }
-  }
-
-  function respotEight() {
-    const eight = balls.find(function (b) { return b.num === 8; });
-    if (!eight) return;
-
-    eight.active = true;
-    eight.vx = eight.vy = 0;
-
-    const baseX = L + PW * 0.72;
-    const baseY = T + PH / 2;
-
-    if (isFreeSpot(baseX, baseY, eight)) { eight.x = baseX; eight.y = baseY; return; }
-    for (let step = 16; step < 700; step += 16) {
-      if (isFreeSpot(baseX + step, baseY, eight)) { eight.x = baseX + step; eight.y = baseY; return; }
-      if (isFreeSpot(baseX - step, baseY, eight)) { eight.x = baseX - step; eight.y = baseY; return; }
-    }
-    for (let ring = 1; ring < 14; ring++) {
-      for (let a = 0; a < 12; a++) {
-        const ang = a / 12 * Math.PI * 2;
-        const px = baseX + Math.cos(ang) * ring * 22;
-        const py = baseY + Math.sin(ang) * ring * 22;
-        if (isFreeSpot(px, py, eight)) { eight.x = px; eight.y = py; return; }
-      }
-    }
-    eight.x = baseX; eight.y = baseY;
-  }
-
-  // ============================================================
-  //  物理
-  // ============================================================
-  function physics(dt) {
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (!b.active) continue;
-      b.x += b.vx * dt;
-      b.y += b.vy * dt;
-
-      const sp = Math.hypot(b.vx, b.vy);
-      if (sp > 0) {
-        const ns = sp - DECEL * dt;
-        if (ns <= 0.5) { b.vx = 0; b.vy = 0; }
-        else { const k = ns / sp; b.vx *= k; b.vy *= k; }
-      }
-    }
-
-    for (let i = 0; i < balls.length; i++) {
-      const a = balls[i];
-      if (!a.active) continue;
-      for (let j = i + 1; j < balls.length; j++) {
-        const b = balls[j];
-        if (!b.active) continue;
-
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const minD = a.r + b.r;
-        const d2 = dx * dx + dy * dy;
-        if (d2 >= minD * minD || d2 === 0) continue;
-
-        const dist = Math.sqrt(d2);
-        const nx = dx / dist, ny = dy / dist;
-        const overlap = minD - dist;
-
-        a.x -= nx * overlap * 0.5;
-        a.y -= ny * overlap * 0.5;
-        b.x += nx * overlap * 0.5;
-        b.y += ny * overlap * 0.5;
-
-        const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
-        const vn = rvx * nx + rvy * ny;
-        if (vn > 0) continue;
-
-        const imp = -(1 + BALL_REST) * vn / 2;
-        a.vx -= imp * nx; a.vy -= imp * ny;
-        b.vx += imp * nx; b.vy += imp * ny;
-
-        if (shot.firstHit === null) {
-          if (a.cue && !b.cue) shot.firstHit = b.num;
-          else if (b.cue && !a.cue) shot.firstHit = a.num;
-        }
-      }
-    }
-
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (!b.active) continue;
-      for (let p = 0; p < POCKETS.length; p++) {
-        const pk = POCKETS[p];
-        const dx = b.x - pk.x, dy = b.y - pk.y;
-        if (dx * dx + dy * dy < POCKET_R * POCKET_R) {
-          handlePocket(b);
-          break;
-        }
-      }
-    }
-
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (!b.active) continue;
-      if (b.x - b.r < L) { b.x = L + b.r; b.vx =  Math.abs(b.vx) * WALL_DAMP; }
-      if (b.x + b.r > R) { b.x = R - b.r; b.vx = -Math.abs(b.vx) * WALL_DAMP; }
-      if (b.y - b.r < T) { b.y = T + b.r; b.vy =  Math.abs(b.vy) * WALL_DAMP; }
-      if (b.y + b.r > B) { b.y = B - b.r; b.vy = -Math.abs(b.vy) * WALL_DAMP; }
-    }
-  }
-
-  function handlePocket(b) {
-    b.active = false;
-    b.vx = b.vy = 0;
-    effects.push({ x: b.x, y: b.y, t: 0, color: b.cue ? '#ffffff' : b.color });
-    if (b.cue) shot.cuePotted = true;
-    else shot.potted.push(b.num);
-  }
-
-  // ============================================================
-  //  回合结算
-  // ============================================================
-  function endShot() {
-    const myIdx   = turn;
-    const myGroup = players[myIdx].group;
-
-    let foul = false, reason = '';
-    const pottedNums = shot.potted.slice();
-    let eightPotted = pottedNums.indexOf(8) >= 0;
-
-    // ---- 开球打进 8 号：重新摆放，不算输 ----
-    if (eightPotted && isBreak) {
-      pottedNums.splice(pottedNums.indexOf(8), 1);
-      eightPotted = false;
-      respotEight();
-      flash('开球打进 8 号球 · 已重新摆放');
-    }
-
-    // ---- 犯规判定 ----
-    if (shot.cuePotted) {
-      foul = true; reason = '母球落袋';
-    } else if (shot.firstHit === null) {
-      foul = true; reason = '空杆';
-    } else if (!openTable && myGroup) {
-      const remain = countRemaining(myGroup);
-      if (remain === 0) {
-        if (shot.firstHit !== 8) { foul = true; reason = '未先碰 8 号球'; }
-      } else {
-        if (groupOf(shot.firstHit) !== myGroup) {
-          if (shot.firstHit === 8) { foul = true; reason = '未清台先碰 8 号球'; }
-          else { foul = true; reason = '先碰对方球'; }
-        }
-      }
-    }
-
-    // ---- 8 号球定胜负 ----
-    if (eightPotted) {
-      const cleared = myGroup && countRemaining(myGroup) === 0;
-
-      if (cleared && !foul) {
-        gameOver = true;
-        winner = myIdx;
-        lastShotInfo = players[myIdx].name + ' 清台后打进 8 号球 · 获胜';
-      } else {
-        gameOver = true;
-        winner = 1 - myIdx;
-        if (!cleared) {
-          lastShotInfo = players[myIdx].name + ' 提前打进 8 号球 · 判负';
-        } else {
-          lastShotInfo = players[myIdx].name + ' 犯规打进 8 号球 · 判负';
-        }
-      }
-      isBreak = false;
-      return;
-    }
-
-    // ---- 球台开放时定球组 ----
-    if (openTable && !foul && pottedNums.length > 0) {
-      const first = pottedNums.find(function (n) { return n !== 8; });
-      if (first !== undefined) {
-        const g = groupOf(first);
-        players[myIdx].group = g;
-        players[1 - myIdx].group = (g === 'solid') ? 'stripe' : 'solid';
-        openTable = false;
-        flash(players[myIdx].name + ' → ' + groupName(g));
-      }
-    }
-
-    // ---- 是否继续击球 ----
-    let continueTurn = false;
-    if (!foul) {
-      const grp = players[myIdx].group;
-      if (grp) continueTurn = pottedNums.some(function (n) { return groupOf(n) === grp; });
-      else continueTurn = pottedNums.length > 0;
-    }
-
-    // ---- 应用结果 ----
-    if (foul) {
-      turn = 1 - myIdx;
-      cueBall.active = false;
-      placeMode = 'anywhere';
-      placePreview.x = cueBall.x;
-      placePreview.y = cueBall.y;
-      flash('犯规 · ' + reason);
-    } else if (continueTurn) {
-      const grp = players[myIdx].group;
-      if (grp && countRemaining(grp) === 0) {
-        flash('已清台 · 目标 8 号球');
-      }
-      if (!cueBall.active) placeMode = 'anywhere';
-    } else {
-      turn = 1 - myIdx;
-      if (!cueBall.active) placeMode = 'anywhere';
-    }
-
-    shot.firstHit = null;
-    shot.potted = [];
-    shot.cuePotted = false;
-    isBreak = false;
-  }
-
-  // ============================================================
-  //  绘制
-  // ============================================================
+  // ---------- 绘制球桌 ----------
   function drawTable() {
     const frameGrad = ctx.createLinearGradient(0, 0, 0, H);
     frameGrad.addColorStop(0, '#7a4f27');
@@ -733,7 +1238,6 @@
     vigR.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = vigR; ctx.fillRect(R - 44, T, 44, PH);
 
-    // 开球线 + 置球点
     ctx.save();
     ctx.strokeStyle = 'rgba(255,255,255,0.10)';
     ctx.lineWidth = 1.5;
@@ -748,19 +1252,18 @@
     ctx.fill();
     ctx.restore();
 
-    // 袋口
     for (let i = 0; i < POCKETS.length; i++) {
       const p = POCKETS[i];
-      const g = ctx.createRadialGradient(p.x, p.y - 5, 2, p.x, p.y, POCKET_R + 2);
+      const g = ctx.createRadialGradient(p.x, p.y - 5, 2, p.x, p.y, view.pocketR + 2);
       g.addColorStop(0, '#000000');
       g.addColorStop(0.68, '#070707');
       g.addColorStop(1, '#2c2c2c');
       ctx.beginPath();
-      ctx.arc(p.x, p.y, POCKET_R, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, view.pocketR, 0, Math.PI * 2);
       ctx.fillStyle = g;
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(p.x, p.y, POCKET_R, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, view.pocketR, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(0,0,0,0.6)';
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -768,7 +1271,8 @@
   }
 
   function drawBall(b) {
-    const x = b.x, y = b.y, r = b.r;
+    if (!b.a) return;
+    const x = b.x, y = b.y, r = BALL_R;
 
     ctx.beginPath();
     ctx.ellipse(x + 2.5, y + 3.5, r * 0.98, r * 0.88, 0, 0, Math.PI * 2);
@@ -777,20 +1281,20 @@
 
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    if (b.stripe) {
+    if (b.s) {
       ctx.fillStyle = '#f6f6f2';
       ctx.fill();
       ctx.save();
       ctx.clip();
-      ctx.fillStyle = b.color;
+      ctx.fillStyle = b.c;
       ctx.fillRect(x - r, y - r * 0.60, r * 2, r * 1.20);
       ctx.restore();
     } else {
-      ctx.fillStyle = b.color;
+      ctx.fillStyle = b.c;
       ctx.fill();
     }
 
-    if (b.num > 0) {
+    if (b.n > 0) {
       ctx.beginPath();
       ctx.arc(x, y, r * 0.56, 0, Math.PI * 2);
       ctx.fillStyle = '#ffffff';
@@ -800,7 +1304,7 @@
       ctx.font = 'bold ' + (r * 0.82).toFixed(1) + 'px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(String(b.num), x, y + 0.5);
+      ctx.fillText(String(b.n), x, y + 0.5);
     }
 
     const g = ctx.createRadialGradient(
@@ -824,9 +1328,12 @@
   }
 
   function drawCue() {
+    const cue = view.balls.find(function (b) { return b.cu; });
+    if (!cue || !cue.a) return;
+
     const pull = 26 + power * 68;
-    const bx = cueBall.x - Math.cos(aimAngle) * (BALL_R + pull);
-    const by = cueBall.y - Math.sin(aimAngle) * (BALL_R + pull);
+    const bx = cue.x - Math.cos(aimAngle) * (BALL_R + pull);
+    const by = cue.y - Math.sin(aimAngle) * (BALL_R + pull);
     const len = 270;
     const ex = bx - Math.cos(aimAngle) * len;
     const ey = by - Math.sin(aimAngle) * len;
@@ -864,10 +1371,10 @@
   }
 
   function drawEffects() {
-    for (let i = effects.length - 1; i >= 0; i--) {
-      const e = effects[i];
+    for (let i = view.effects.length - 1; i >= 0; i--) {
+      const e = view.effects[i];
       e.t += 0.045;
-      if (e.t >= 1) { effects.splice(i, 1); continue; }
+      if (e.t >= 1) { view.effects.splice(i, 1); continue; }
       ctx.beginPath();
       ctx.arc(e.x, e.y, 8 + e.t * 34, 0, Math.PI * 2);
       ctx.strokeStyle = e.color;
@@ -879,15 +1386,21 @@
   }
 
   function drawPlayerPanel(i, x, y, w, h) {
-    const p = players[i];
-    const active = (turn === i) && !gameOver;
+    const active = (view.turn === i) && !view.over;
+    const color  = i === 0 ? '#4a9eff' : '#ff7a4a';
+    let name = '玩家 ' + (i + 1);
+    if (myRole === 'local') {
+      // 本地：不加（你）
+    } else if (i === mySeat) {
+      name += '（你）';
+    }
 
     roundRect(x, y, w, h, 12);
     ctx.fillStyle = active ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.30)';
     ctx.fill();
 
     if (active) {
-      ctx.strokeStyle = p.color;
+      ctx.strokeStyle = color;
       ctx.lineWidth = 2;
       ctx.stroke();
     } else {
@@ -898,19 +1411,28 @@
 
     ctx.beginPath();
     ctx.arc(x + 22, y + h / 2 - 1, 6, 0, Math.PI * 2);
-    ctx.fillStyle = active ? p.color : 'rgba(255,255,255,0.22)';
+    ctx.fillStyle = active ? color : 'rgba(255,255,255,0.22)';
     ctx.fill();
 
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = active ? '#ffffff' : 'rgba(255,255,255,0.50)';
     ctx.font = '700 16px system-ui, -apple-system, "PingFang SC", sans-serif';
-    ctx.fillText(p.name, x + 38, y + h / 2 - 1);
+    ctx.fillText(name, x + 38, y + h / 2 - 1);
 
     let info;
-    if (p.group === 'solid') {
+    const grp = view.groups[i];
+    function countRemaining(g) {
+      let n = 0;
+      for (let k = 0; k < view.balls.length; k++) {
+        const b = view.balls[k];
+        if (b.a && !b.cu && groupOf(b.n) === g) n++;
+      }
+      return n;
+    }
+    if (grp === 'solid') {
       info = countRemaining('solid') === 0 ? '全色 · 已清台' : '全色 · 剩 ' + countRemaining('solid');
-    } else if (p.group === 'stripe') {
+    } else if (grp === 'stripe') {
       info = countRemaining('stripe') === 0 ? '花色 · 已清台' : '花色 · 剩 ' + countRemaining('stripe');
     } else {
       info = '球组未定';
@@ -949,7 +1471,7 @@
 
   function drawPlacePreview() {
     const p = placePreview;
-    const ok = canPlaceCue(p.x, p.y, placeMode);
+    const ok = canPlaceCue(p.x, p.y, view.place);
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, BALL_R, 0, Math.PI * 2);
@@ -978,11 +1500,21 @@
     ctx.fillStyle = 'rgba(255,255,255,0.30)';
 
     let txt = '';
-    if (gameOver) txt = '点击屏幕重新开始';
-    else if (placeMode === 'break') txt = '点击开球区放置白球';
-    else if (placeMode === 'anywhere') txt = '自由球 —— 点击台面放置白球';
-    else if (state === 'moving') txt = '';
-    else txt = '按住蓄力，松开击球';
+    if (view.over) {
+      txt = '点击屏幕重新开始';
+    } else if (myRole === 'host' && playerCount < 2) {
+      txt = '等待对手加入…（房间号 ' + roomId + '）';
+    } else if (view.place === 'break') {
+      txt = isMyTurn() ? '点击开球区放置白球' : '等待对手放置白球…';
+    } else if (view.place === 'anywhere') {
+      txt = isMyTurn() ? '自由球 —— 点击台面放置白球' : '等待对手放置白球…';
+    } else if (view.state === 'moving') {
+      txt = '';
+    } else if (!isMyTurn()) {
+      txt = '等待对手击球…';
+    } else {
+      txt = '按住蓄力，松开击球';
+    }
 
     ctx.fillText(txt, W / 2, 545);
   }
@@ -1019,19 +1551,17 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const wc = players[winner].color;
+    const wc = view.winner === 0 ? '#4a9eff' : '#ff7a4a';
+    let name = '玩家 ' + (view.winner + 1);
+    if (myRole !== 'local' && view.winner === mySeat) name += '（你）';
 
     ctx.fillStyle = wc;
     ctx.font = 'bold 54px system-ui, -apple-system, "PingFang SC", sans-serif';
-    ctx.fillText('🏆  ' + players[winner].name + ' 获胜！', W / 2, H / 2 - 60);
+    ctx.fillText('🏆  ' + name + ' 获胜！', W / 2, H / 2 - 60);
 
     ctx.fillStyle = 'rgba(255,255,255,0.88)';
     ctx.font = '600 18px system-ui, -apple-system, "PingFang SC", sans-serif';
-    if (lastShotInfo) {
-      ctx.fillText(lastShotInfo, W / 2, H / 2 - 2);
-    } else {
-      ctx.fillText('8 号球落袋 · 比赛结束', W / 2, H / 2 - 2);
-    }
+    ctx.fillText(view.lastInfo || '8 号球落袋 · 比赛结束', W / 2, H / 2 - 2);
 
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.font = '17px system-ui, -apple-system, "PingFang SC", sans-serif';
@@ -1043,15 +1573,16 @@
     drawTable();
     drawEffects();
 
-    for (let i = 0; i < balls.length; i++) {
-      if (balls[i].active) drawBall(balls[i]);
+    for (let i = 0; i < view.balls.length; i++) {
+      drawBall(view.balls[i]);
     }
 
-    if (!gameOver) {
-      if (placeMode !== 'none') {
+    if (!view.over) {
+      if (view.place !== 'none' && isMyTurn()) {
         drawPlacePreview();
-      } else if (state === 'aiming' && cueBall.active) {
-        drawCue();
+      } else if (view.state === 'aiming' && isMyTurn()) {
+        const cue = view.balls.find(function (b) { return b.cu; });
+        if (cue && cue.a) drawCue();
       }
     }
 
@@ -1061,7 +1592,7 @@
     drawHintText();
 
     if (flashTimer > 0) drawFlash();
-    if (gameOver) drawWinScreen();
+    if (view.over) drawWinScreen();
   }
 
   // ============================================================
@@ -1076,41 +1607,61 @@
   }
 
   function updateAim(e) {
-    if (!cueBall.active) return;
+    const cue = view.balls.find(function (b) { return b.cu; });
+    if (!cue || !cue.a) return;
     const p = eventToCanvas(e);
-    const dx = p.x - cueBall.x, dy = p.y - cueBall.y;
+    const dx = p.x - cue.x, dy = p.y - cue.y;
     if (dx * dx + dy * dy > 100) aimAngle = Math.atan2(dy, dx);
   }
 
-  function shoot() {
-    const speed = MIN_SHOT + power * (MAX_SHOT - MIN_SHOT);
-    cueBall.vx = Math.cos(aimAngle) * speed;
-    cueBall.vy = Math.sin(aimAngle) * speed;
-    state = 'moving';
+  function doShoot() {
+    if (myRole === 'guest') {
+      sendNet({ t: 'shoot', seat: 1, angle: aimAngle, power: power });
+    } else if (engine) {
+      engine.shoot(aimAngle, power);
+    }
     power = 0;
+  }
+
+  function doPlace(x, y) {
+    if (myRole === 'guest') {
+      sendNet({ t: 'place', seat: 1, x: x, y: y });
+    } else if (engine) {
+      engine.placeCue(x, y);
+    }
+  }
+
+  function doRestart() {
+    if (myRole === 'guest') {
+      sendNet({ t: 'restart' });
+    } else if (engine) {
+      engine.reset();
+    }
   }
 
   canvas.addEventListener('pointerdown', function (e) {
     e.preventDefault();
+    if (!inRoom) return;
 
-    if (gameOver) { restart(); return; }
-
-    const p = eventToCanvas(e);
-
-    if (placeMode !== 'none') {
-      if (canPlaceCue(p.x, p.y, placeMode)) {
-        cueBall.x = p.x;
-        cueBall.y = p.y;
-        cueBall.vx = cueBall.vy = 0;
-        cueBall.active = true;
-        placeMode = 'none';
-      } else {
-        flash('这个位置放不下白球');
-      }
+    if (view.over) {
+      doRestart();
       return;
     }
 
-    if (state !== 'aiming' || !cueBall.active) return;
+    const p = eventToCanvas(e);
+
+    if (view.place !== 'none') {
+      if (!isMyTurn()) return;
+      doPlace(p.x, p.y);
+      placePreview.dragged = false;
+      return;
+    }
+
+    if (view.state !== 'aiming') return;
+    if (!isMyTurn()) return;
+
+    const cue = view.balls.find(function (b) { return b.cu; });
+    if (!cue || !cue.a) return;
 
     pointerDown = true;
     power = 0;
@@ -1122,22 +1673,24 @@
   });
 
   canvas.addEventListener('pointermove', function (e) {
+    if (!inRoom) return;
     const p = eventToCanvas(e);
 
-    if (placeMode !== 'none') {
+    if (view.place !== 'none') {
       placePreview.x = p.x;
       placePreview.y = p.y;
+      placePreview.dragged = true;
       return;
     }
-    if (state === 'aiming') updateAim(e);
+    if (view.state === 'aiming' && isMyTurn()) updateAim(e);
   });
 
-  function endPointer(e) {
+  function endPointer() {
     if (!pointerDown) return;
     pointerDown = false;
 
-    if (state === 'aiming' && cueBall.active && power > 0.02) {
-      shoot();
+    if (view.state === 'aiming' && isMyTurn() && power > 0.02) {
+      doShoot();
     } else {
       power = 0;
     }
@@ -1150,38 +1703,43 @@
   });
 
   // ============================================================
-  //  重开
+  //  大厅 / UI
   // ============================================================
-  function restart() {
-    turn = 0;
-    openTable = true;
-    placeMode = 'none';
-    isBreak = true;
-    gameOver = false;
-    winner = -1;
-    power = 0;
-    pointerDown = false;
-    state = 'aiming';
-    aimAngle = 0;
-    effects.length = 0;
-    flashTimer = 0;
-    flashMsg = '';
-    lastShotInfo = '';
+  document.getElementById('localBtn').addEventListener('click', function () {
+    myRole = 'local';
+    mySeat = -1;
+    playerCount = 2;
+    roomId = 'LOCAL';
+    inRoom = true;
 
-    players[0].group = null;
-    players[1].group = null;
+    engine = new GameEngine('normal');
+    applySnapshot(engine.snapshot());
+    engine.flashMsg = '';
+    showRoomUI();
+    flash('单机双人对战 · 玩家 1 开球');
+  });
 
-    shot.firstHit = null;
-    shot.potted = [];
-    shot.cuePotted = false;
+  document.getElementById('createBtn').addEventListener('click', createRoom);
 
-    initRack();
-    flash('玩家 1 开球');
+  document.getElementById('joinBtn').addEventListener('click', function () {
+    const rid = roomInput.value.trim();
+    if (!/^\d{4}$/.test(rid)) {
+      lobbyMsg.textContent = '请输入 4 位数字房间号';
+      return;
+    }
+    joinRoom(rid);
+  });
+
+  roomInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') document.getElementById('joinBtn').click();
+  });
+
+  function showRoomUI() {
+    lobby.classList.add('hidden');
+    roomNumEl.textContent = roomId;
   }
 
-  // ============================================================
-  //  UI：规则面板 & 难度
-  // ============================================================
+  // 规则面板
   const rulesPanel = document.getElementById('rulesPanel');
   const rulesBtn   = document.getElementById('rulesBtn');
   const closeRules = document.getElementById('closeRules');
@@ -1196,59 +1754,21 @@
     if (e.target === rulesPanel) rulesPanel.classList.add('hidden');
   });
 
-  const DIFFICULTY = {
-    easy: {
-      POCKET_R: 26, DECEL: 520, WALL_DAMP: 0.74,
-      BALL_REST: 0.94, MAX_SHOT: 1700, MIN_SHOT: 200
-    },
-    normal: {
-      POCKET_R: 21, DECEL: 400, WALL_DAMP: 0.80,
-      BALL_REST: 0.95, MAX_SHOT: 2000, MIN_SHOT: 220
-    },
-    hard: {
-      POCKET_R: 17, DECEL: 300, WALL_DAMP: 0.86,
-      BALL_REST: 0.96, MAX_SHOT: 2300, MIN_SHOT: 240
-    }
-  };
-
-  function setDifficulty(name) {
-    const d = DIFFICULTY[name];
-    if (!d) return;
-    POCKET_R  = d.POCKET_R;
-    DECEL     = d.DECEL;
-    WALL_DAMP = d.WALL_DAMP;
-    BALL_REST = d.BALL_REST;
-    MAX_SHOT  = d.MAX_SHOT;
-    MIN_SHOT  = d.MIN_SHOT;
-
-    const btns = document.querySelectorAll('#difficulty button');
-    for (let i = 0; i < btns.length; i++) {
-      btns[i].classList.toggle('active', btns[i].dataset.diff === name);
-    }
-
-    // 避免球卡进新袋口
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (!b.active) continue;
-      for (let p = 0; p < POCKETS.length; p++) {
-        const pk = POCKETS[p];
-        if (Math.hypot(b.x - pk.x, b.y - pk.y) < POCKET_R + BALL_R * 0.5) {
-          b.x = L + PW * 0.25;
-          b.y = T + PH / 2;
-          b.vx = b.vy = 0;
-          break;
-        }
-      }
-    }
-
-    const label = { easy: '简单', normal: '普通', hard: '困难' }[name];
-    flash('难度：' + label);
-  }
-
+  // 难度
   const diffBtns = document.querySelectorAll('#difficulty button');
   for (let i = 0; i < diffBtns.length; i++) {
     diffBtns[i].addEventListener('click', function () {
-      setDifficulty(this.dataset.diff);
+      const level = this.dataset.diff;
+      if (myRole === 'guest') {
+        sendNet({ t: 'diff', level: level });
+      } else if (engine) {
+        engine.setDifficulty(level);
+        const label = { easy: '简单', normal: '普通', hard: '困难' }[level];
+        flash('难度：' + label);
+      }
+      for (let k = 0; k < diffBtns.length; k++) {
+        diffBtns[k].classList.toggle('active', diffBtns[k].dataset.diff === level);
+      }
     });
   }
 
@@ -1256,15 +1776,7 @@
   //  主循环
   // ============================================================
   let lastTime = performance.now();
-  let accumulator = 0;
-
-  function allStopped() {
-    for (let i = 0; i < balls.length; i++) {
-      const b = balls[i];
-      if (b.active && (b.vx !== 0 || b.vy !== 0)) return false;
-    }
-    return true;
-  }
+  let lastBroadcast = 0;
 
   function frame(now) {
     let dt = (now - lastTime) / 1000;
@@ -1274,33 +1786,49 @@
 
     if (flashTimer > 0) flashTimer -= dt;
 
-    if (pointerDown && state === 'aiming' && !gameOver && placeMode === 'none') {
+    // 本地/房主推进引擎
+    if ((myRole === 'local' || myRole === 'host') && engine) {
+      const msg = engine.step(dt);
+      applySnapshot(engine.snapshot());
+      if (msg) flash(msg);
+
+      // 房主广播状态
+      if (myRole === 'host' && conn && conn.open) {
+        const moving = engine.state === 'moving';
+        if (moving || (now - lastBroadcast > 200)) {
+          lastBroadcast = now;
+          sendNet({ t: 'state', state: engine.snapshot() });
+        }
+      }
+    }
+
+    // 蓄力
+    if (pointerDown && view.state === 'aiming' && !view.over &&
+        view.place === 'none' && isMyTurn()) {
       power = Math.min(1, power + dt * 1.0);
     }
 
-    accumulator += dt;
-    let steps = 0;
-    while (accumulator >= FIXED_DT && steps < 40) {
-      physics(FIXED_DT);
-      accumulator -= FIXED_DT;
-      steps++;
+    // 客机本地特效衰减
+    if (myRole === 'guest') {
+      for (let i = view.effects.length - 1; i >= 0; i--) {
+        view.effects[i].t += 0.045;
+        if (view.effects[i].t >= 1) view.effects.splice(i, 1);
+      }
     }
-    if (steps >= 40) accumulator = 0;
 
-    if (state === 'moving' && allStopped()) {
-      state = 'aiming';
-      endShot();
+    // 放置预览跟随鼠标（仅在放置模式且轮到自己）
+    if (view.place !== 'none' && isMyTurn() && !placePreview.dragged) {
+      const cue = view.balls.find(function (b) { return b.cu; });
+      if (cue) {
+        placePreview.x = cue.x || L + PW * 0.25;
+        placePreview.y = cue.y || T + PH / 2;
+      }
     }
 
     render();
     requestAnimationFrame(frame);
   }
 
-  // ============================================================
-  //  启动
-  // ============================================================
-  initRack();
-  flash('玩家 1 开球');
   requestAnimationFrame(frame);
 })();
 </script>
