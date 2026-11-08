@@ -1,14 +1,631 @@
-<html>
-    <head>
-        <title>
-            Xinzhe Xiao's Blog
-        </title>
-    </head>
-    <body>
-        <h1>
-            Xinzhe Xiao's Blog
-        </h1>
-        This page is building. 
-        <a href="/ball">billiards game</a>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xinzhe Xiao | OIer</title>
+
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 引入 Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- 引入 GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- 引入 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <!-- 自定义样式配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'void': '#030305',
+                        'glass': 'rgba(255, 255, 255, 0.05)',
+                        'glass-border': 'rgba(255, 255, 255, 0.1)',
+                        'neon-purple': '#b026ff',
+                        'neon-cyan': '#00f3ff',
+                    },
+                    fontFamily: {
+                        'serif': ['"Playfair Display"', '"Noto Serif SC"', 'serif'],
+                        'sans': ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030305;
+            color: #ffffff;
+            overflow-x: hidden;
+            margin: 0;
+            cursor: none; /* 隐藏默认光标，使用自定义光标 */
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030305;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #b026ff, #00f3ff);
+            border-radius: 4px;
+        }
+
+        /* 3D 画布背景 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        /* 玻璃拟态卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 30px rgba(176, 38, 255, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        /* 文字发光效果 */
+        .text-glow {
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+
+        .text-glow-purple {
+            text-shadow: 0 0 20px rgba(176, 38, 255, 0.5);
+        }
+
+        /* 自定义光标 */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00f3ff;
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* 装饰线条 */
+        .deco-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00f3ff, transparent);
+            height: 1px;
+            width: 100%;
+            opacity: 0.5;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #ffffff, #a5b4fc, #00f3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 加载动画遮罩 */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #030305;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease-out;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-neon-cyan selection:text-black">
+
+    <!-- 加载层 -->
+    <div id="loader">
+        <div class="text-2xl font-serif italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r
+from-neon-purple to-neon-cyan animate-pulse">
+            Initializing neural link...
+        </div>
+    </div>
+
+    <!-- 自定义光标 -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Three.js 背景容器 -->
+    <div id="canvas-container"></div>
+
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 w-full z-50 px-6 py-6 flex justify-between items-center mix-blend-difference">
+        <div class="text-2xl font-serif font-bold tracking-widest hover:text-neon-cyan transition-colors
+duration-300 cursor-pointer" data-hover>
+            Xinzhe Xiao
+        </div>
+        <div class="hidden md:flex space-x-12 text-sm font-sans tracking-wider">
+            <a href="#home" class="hover:text-neon-cyan transition-colors relative group" data-hover>
+                Index
+                <span class="absolute -bottom-1 left-0 w-0 h-px bg-neon-cyan transition-all
+group-hover:w-full"></span>
+            </a>
+            <a href="#about" class="hover:text-neon-cyan transition-colors relative group" data-hover>
+                About
+                <span class="absolute -bottom-1 left-0 w-0 h-px bg-neon-cyan transition-all
+group-hover:w-full"></span>
+            </a>
+            <a href="#links" class="hover:text-neon-cyan transition-colors relative group" data-hover>
+                Links
+                <span class="absolute -bottom-1 left-0 w-0 h-px bg-neon-cyan transition-all
+group-hover:w-full"></span>
+            </a>
+            <a href="#contact" class="hover:text-neon-cyan transition-colors relative group" data-hover>
+                Contact
+                <span class="absolute -bottom-1 left-0 w-0 h-px bg-neon-cyan transition-all
+group-hover:w-full"></span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="home" class="min-h-screen flex items-center justify-center px-6 relative">
+            <div class="text-center max-w-5xl relative">
+                <p class="text-neon-cyan font-sans tracking-[0.3em] text-sm mb-4 opacity-0 hero-anim">WELCOME TO
+MY UNIVERSE</p>
+                <h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold leading-tight mb-6">
+                    <span class="block text-glow hero-anim">Solve </span>
+                    <span class="block gradient-text hero-anim">Beyond the Limit</span>
+                </h1>
+                <p class="text-gray-400 font-sans text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10
+opacity-0 hero-anim">
+                    I'm <span class="text-white font-medium">Xinzhe Xiao</span> — a competitive programmer (OIer).
+                    I turn hard problems into clean algorithms.
+                </p>
+                <div class="flex justify-center gap-6 opacity-0 hero-anim">
+                    <a href="#links" class="px-8 py-3 border border-neon-cyan text-neon-cyan font-sans tracking-wider
+hover:bg-neon-cyan hover:text-black transition-all duration-300 rounded-full" data-hover>
+                        Explore My Links
+                    </a>
+                    <a href="#about" class="px-8 py-3 border border-white/20 text-white font-sans tracking-wider
+hover:border-white transition-all duration-300 rounded-full glass-card" data-hover>
+                        About Me
+                    </a>
+                </div>
+            </div>
+
+            <!-- 滚动提示 -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center
+animate-bounce opacity-50">
+                <span class="text-[10px] tracking-widest mb-2">SCROLL</span>
+                <div class="w-[1px] h-12 bg-gradient-to-b from-neon-cyan to-transparent"></div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-32 px-6 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-neon-purple to-neon-cyan rounded-lg
+blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                        <div class="relative glass-card rounded-lg p-8 aspect-[4/5] overflow-hidden flex
+items-center justify-center">
+                            <!-- 模拟的视觉化内容 -->
+                            <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/80"></div>
+                            <div class="z-10 text-center">
+                                <div class="text-sm font-sans tracking-widest text-neon-cyan">Portrait coming soon.</div>
+                            </div>
+                            <!-- 装饰元素 -->
+                            <div class="absolute top-0 left-0 w-full h-full
+bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-serif mb-8 leading-tight">
+                            Coding is not only a <span class="text-neon-purple italic">Tool</span><br>
+                            It's <span class="gradient-text">Art</span>
+                        </h2>
+                        <p class="text-gray-400 leading-8 mb-6 font-sans">
+                            I am an OIer — an Olympiad in Informatics competitor. My daily work is algorithms,
+                            data structures, and the quiet joy of finding an elegant solution under pressure.
+                        </p>
+                        <p class="text-gray-400 leading-8 mb-8 font-sans">
+                            I compete in algorithm contests and build things on the side: games, tools, and small
+                            factories of ideas. I care about correctness, complexity, and code that reads like a proof.
+                        </p>
+
+                        <!-- 技能标签 -->
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-cyan-300">C++17</span>
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-purple-300">Algorithms</span>
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-blue-300">Data Structures</span>
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-pink-300">Competitive Programming</span>
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-yellow-300">Python</span>
+                            <span class="px-4 py-2 glass-card text-xs font-sans rounded text-green-300">Web / WebGL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Links Section：账号 / 游戏 / 工厂 三个链接位置 -->
+        <section id="links" class="py-32 px-6 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-serif mb-2">Links</h2>
+                        <div class="h-1 w-20 bg-gradient-to-r from-neon-purple to-neon-cyan"></div>
+                    </div>
+                    <p class="text-gray-500 font-sans mt-4 md:mt-0">Account · Game · Factory</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Account Link -->
+                    <!-- TODO: 把下方 href="#" 替换为账号链接（如洛谷 / Codeforces / AtCoder 主页） -->
+                    <a id="account-link" href="#" class="project-card glass-card rounded-xl overflow-hidden group
+relative h-[400px] block" data-hover>
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700
+group-hover:scale-110" style="background-image:
+url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');"></div>
+                        <div class="absolute inset-0 bg-black/70 group-hover:bg-black/50 transition-colors
+duration-300"></div>
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                            <div class="text-neon-cyan text-xs font-bold tracking-widest mb-2">ACCOUNT</div>
+                            <h3 class="text-2xl font-serif font-bold mb-2">Online Judge Profile</h3>
+                            <p class="text-gray-300 text-sm mb-4">My handles and submissions across the judges I use.</p>
+                            <span class="text-neon-cyan text-xs font-sans tracking-widest">LINK RESERVED →</span>
+                        </div>
+                        <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-neon-cyan
+opacity-40 group-hover:opacity-100 transition-opacity"></div>
+                    </a>
+
+                    <!-- Game Link -->
+                    <!-- TODO: 把下方 href="#" 替换为游戏链接 -->
+                    <a id="game-link" href="/game" class="project-card glass-card rounded-xl overflow-hidden group
+relative h-[400px] block" data-hover>
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700
+group-hover:scale-110" style="background-image:
+url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop');"></div>
+                        <div class="absolute inset-0 bg-black/70 group-hover:bg-black/50 transition-colors
+duration-300"></div>
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                            <div class="text-neon-purple text-xs font-bold tracking-widest mb-2">GAME</div>
+                            <h3 class="text-2xl font-serif font-bold mb-2">The Game</h3>
+                            <p class="text-gray-300 text-sm mb-4">A playable project, built from scratch and still evolving.</p>
+                            <span class="text-neon-purple text-xs font-sans tracking-widest">LINK RESERVED →</span>
+                        </div>
+                        <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-neon-purple
+opacity-40 group-hover:opacity-100 transition-opacity"></div>
+                    </a>
+
+                    <!-- Factory Link -->
+                    <!-- TODO: 把下方 href="#" 替换为工厂链接 -->
+                    <a id="factory-link" href="#" class="project-card glass-card rounded-xl overflow-hidden group
+relative h-[400px] block" data-hover>
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700
+group-hover:scale-110" style="background-image:
+url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop');"></div>
+                        <div class="absolute inset-0 bg-black/70 group-hover:bg-black/50 transition-colors
+duration-300"></div>
+                        <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                            <div class="text-pink-500 text-xs font-bold tracking-widest mb-2">FACTORY</div>
+                            <h3 class="text-2xl font-serif font-bold mb-2">The Factory</h3>
+                            <p class="text-gray-300 text-sm mb-4">Where ideas are assembled, tested, and shipped.</p>
+                            <span class="text-pink-500 text-xs font-sans tracking-widest">LINK RESERVED →</span>
+                        </div>
+                        <div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-pink-500
+opacity-40 group-hover:opacity-100 transition-opacity"></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Focus Section -->
+        <section class="py-20 border-y border-white/10 bg-black/20 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="stat-item">
+                    <div class="text-2xl md:text-3xl font-bold font-serif gradient-text mb-2">C++17</div>
+                    <div class="text-xs text-gray-500 tracking-widest uppercase">Primary Language</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-2xl md:text-3xl font-bold font-serif gradient-text mb-2">Algorithms</div>
+                    <div class="text-xs text-gray-500 tracking-widest uppercase">Core Focus</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-2xl md:text-3xl font-bold font-serif gradient-text mb-2">Data Structures</div>
+                    <div class="text-xs text-gray-500 tracking-widest uppercase">Daily Practice</div>
+                </div>
+                <div class="stat-item">
+                    <div class="text-2xl md:text-3xl font-bold font-serif gradient-text mb-2">Problem Solving</div>
+                    <div class="text-xs text-gray-500 tracking-widest uppercase">The Real Work</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-32 px-6 relative">
+            <div class="max-w-4xl mx-auto text-center relative">
+                <!-- 光晕背景 -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px]
+h-[300px] bg-neon-purple rounded-full blur-[150px] opacity-20 pointer-events-none"></div>
+
+                <h2 class="text-5xl md:text-7xl font-serif mb-6">Let's build something.</h2>
+                <p class="text-gray-400 mb-12 max-w-xl mx-auto font-sans">
+                    A hard problem, a game idea, or a factory of your own — I'm always up for the next challenge.
+                </p>
+
+                <!-- TODO: 把 mailto 里的占位邮箱替换为你的邮箱 -->
+                <a href="mailto:your@email.com" class="inline-block relative group px-10 py-4 bg-white text-black
+font-bold font-sans tracking-widest hover:bg-neon-cyan transition-colors duration-300" data-hover>
+                    Send an Email
+                    <span class="absolute inset-0 border border-white rounded-full scale-110 opacity-0
+group-hover:scale-100 group-hover:opacity-20 transition-all duration-500"></span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-8 border-t border-white/10 text-center text-gray-600 text-xs tracking-widest relative
+z-10">
+            <p>&copy; 2026 XINZHE XIAO. ALL RIGHTS RESERVED.</p>
+            <p class="mt-2">DESIGNED WITH CODE &amp; PASSION</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- 1. Three.js 动态星云背景 ---
+        const initThreeJS = () => {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+
+            // 添加深空雾效
+            scene.fog = new THREE.FogExp2(0x030305, 0.002);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // 创建粒子系统
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 3000;
+
+            const posArray = new Float32Array(particlesCount * 3);
+            const colorArray = new Float32Array(particlesCount * 3);
+
+            const color1 = new THREE.Color(0xb026ff); // 紫色
+            const color2 = new THREE.Color(0x00f3ff); // 青色
+
+            for(let i = 0; i < particlesCount * 3; i+=3) {
+                // 随机分布在空间中
+                posArray[i] = (Math.random() - 0.5) * 15; // x
+                posArray[i+1] = (Math.random() - 0.5) * 15; // y
+                posArray[i+2] = (Math.random() - 0.5) * 15; // z
+
+                // 随机混合颜色
+                const mixedColor = Math.random() > 0.5 ? color1 : color2;
+                colorArray[i] = mixedColor.r;
+                colorArray[i+1] = mixedColor.g;
+                colorArray[i+2] = mixedColor.b;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+
+            // 材质
+            const material = new THREE.PointsMaterial({
+                size: 0.03,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            // 网格
+            const particlesMesh = new THREE.Points(particlesGeometry, material);
+            scene.add(particlesMesh);
+
+            camera.position.z = 5;
+
+            // 鼠标交互变量
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+
+            const windowHalfX = window.innerWidth / 2;
+            const windowHalfY = window.innerHeight / 2;
+
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - windowHalfX);
+                mouseY = (event.clientY - windowHalfY);
+            });
+
+            // 动画循环
+            const clock = new THREE.Clock();
+
+            const animate = () => {
+                const elapsedTime = clock.getElapsedTime();
+
+                targetX = mouseX * 0.001;
+                targetY = mouseY * 0.001;
+
+                // 粒子自身缓慢旋转
+                particlesMesh.rotation.y += 0.001;
+                particlesMesh.rotation.x += 0.0005;
+
+                // 模拟波浪运动
+                const positions = particlesGeometry.attributes.position.array;
+                for(let i = 0; i < particlesCount; i++) {
+                    const i3 = i * 3;
+                    const x = particlesGeometry.attributes.position.array[i3];
+                    // 基于正弦波的轻微波动
+                    particlesGeometry.attributes.position.array[i3 + 1] += Math.sin(elapsedTime + x) * 0.002;
+                }
+                particlesGeometry.attributes.position.needsUpdate = true;
+
+                // 鼠标视差平滑跟随
+                particlesMesh.rotation.y += 0.05 * (targetX - particlesMesh.rotation.y);
+                particlesMesh.rotation.x += 0.05 * (targetY - particlesMesh.rotation.x);
+
+                renderer.render(scene, camera);
+                requestAnimationFrame(animate);
+            };
+
+            animate();
+
+            // 窗口调整适配
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        };
+
+        // --- 2. 自定义光标逻辑 ---
+        const initCursor = () => {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            const hoverElements = document.querySelectorAll('[data-hover]');
+
+            // 鼠标移动
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                // 点直接跟随
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+
+                // 圈有延迟动画效果
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            // 悬停放大
+            hoverElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorOutline.style.width = '60px';
+                    cursorOutline.style.height = '60px';
+                    cursorOutline.style.backgroundColor = 'rgba(0, 243, 255, 0.1)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorOutline.style.width = '40px';
+                    cursorOutline.style.height = '40px';
+                    cursorOutline.style.backgroundColor = 'transparent';
+                });
+            });
+        };
+
+        // --- 3. GSAP 动画 ---
+        const initAnimations = () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 加载动画
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+
+                    // 首页 Hero 元素进场
+                    gsap.to('.hero-anim', {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1,
+                        stagger: 0.2,
+                        ease: 'power3.out'
+                    });
+                }, 1000);
+            }, 1500);
+
+            // 滚动出现动画 (通用)
+            gsap.utils.toArray('.glass-card').forEach(card => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                });
+            });
+
+            // 项目卡片交错进场
+            gsap.from('.project-card', {
+                scrollTrigger: {
+                    trigger: '#links',
+                    start: "top 80%"
+                },
+                y: 100,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: "power3.out"
+            });
+        };
+
+        // --- 初始化 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            initCursor();
+            initAnimations();
+        });
+
+    </script>
+</body>
 </html>
