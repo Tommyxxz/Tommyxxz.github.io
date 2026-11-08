@@ -308,7 +308,7 @@ bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwM
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <!-- Account Link -->
                     <!-- TODO: 把下方 href="#" 替换为账号链接（如洛谷 / Codeforces / AtCoder 主页） -->
-                    <a id="account-link" href="#" class="project-card glass-card rounded-xl overflow-hidden group
+                    <a id="account-link" href="https://www.luogu.com.cn/user/733995" class="project-card glass-card rounded-xl overflow-hidden group
 relative h-[400px] block" data-hover>
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700
 group-hover:scale-110" style="background-image:
@@ -399,14 +399,6 @@ h-[300px] bg-neon-purple rounded-full blur-[150px] opacity-20 pointer-events-non
                 <p class="text-gray-400 mb-12 max-w-xl mx-auto font-sans">
                     A hard problem, a game idea, or a factory of your own — I'm always up for the next challenge.
                 </p>
-
-                <!-- TODO: 把 mailto 里的占位邮箱替换为你的邮箱 -->
-                <a href="mailto:your@email.com" class="inline-block relative group px-10 py-4 bg-white text-black
-font-bold font-sans tracking-widest hover:bg-neon-cyan transition-colors duration-300" data-hover>
-                    Send an Email
-                    <span class="absolute inset-0 border border-white rounded-full scale-110 opacity-0
-group-hover:scale-100 group-hover:opacity-20 transition-all duration-500"></span>
-                </a>
             </div>
         </section>
 
@@ -591,32 +583,53 @@ z-10">
             }, 1500);
 
             // 滚动出现动画 (通用)
+            // 注意：链接卡片同时带 .glass-card 和 .project-card，这里必须跳过，
+            // 否则同一个元素被两个 from tween 抢 opacity，偶尔会一直停在 opacity:0。
             gsap.utils.toArray('.glass-card').forEach(card => {
+                if (card.classList.contains('project-card')) return;
                 gsap.from(card, {
                     scrollTrigger: {
                         trigger: card,
                         start: "top 85%",
-                        toggleActions: "play none none reverse"
+                        toggleActions: "play none none reverse",
+                        invalidateOnRefresh: true
                     },
                     y: 50,
                     opacity: 0,
                     duration: 1,
-                    ease: "power3.out"
+                    ease: "power3.out",
+                    // 触发器位置异常时宁可保持可见，也不要把卡片永久藏起来
+                    immediateRender: false
                 });
             });
 
-            // 项目卡片交错进场
+            // 链接卡片交错进场（.project-card 只由这一处动画控制）
+            // once:true —— 播完就销毁触发器，绝不因为反向/位置刷新把卡片重新藏起来
             gsap.from('.project-card', {
                 scrollTrigger: {
                     trigger: '#links',
-                    start: "top 80%"
+                    start: "top 80%",
+                    once: true,
+                    invalidateOnRefresh: true
                 },
                 y: 100,
                 opacity: 0,
                 duration: 1,
                 stagger: 0.2,
-                ease: "power3.out"
+                ease: "power3.out",
+                immediateRender: false
             });
+
+            // Tailwind CDN / 字体是异步生成的，首帧算出的 ScrollTrigger 位置经常是错的，
+            // 导致进入 Links 时卡片不触发。布局稳定后统一刷新。
+            const refreshTriggers = () => { if (window.ScrollTrigger) ScrollTrigger.refresh(); };
+            window.addEventListener('load', refreshTriggers);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshTriggers);
+            // 用户第一次滚动时再校正一次（此时 Tailwind 一定已经生效）
+            window.addEventListener('scroll', refreshTriggers, { once: true, passive: true });
+            setTimeout(refreshTriggers, 800);
+            setTimeout(refreshTriggers, 2000);
+            setTimeout(refreshTriggers, 4000);
         };
 
         // --- 初始化 ---
